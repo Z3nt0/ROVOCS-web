@@ -120,3 +120,64 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar styles */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Improve touch targets */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better spacing for mobile */
+  .mobile-spacing {
+    padding: 0.75rem;
+  }
+  
+  /* Improve text readability on mobile */
+  .mobile-text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  /* Better modal positioning on mobile */
+  .mobile-modal {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .xs\:grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}

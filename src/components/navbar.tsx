@@ -36,20 +36,38 @@ export function Navbar({ user, onMobileMenuToggle, showMobileMenuButton = true }
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [notificationsLoading, setNotificationsLoading] = useState(false)
+  const [notificationsError, setNotificationsError] = useState(false)
 
   const fetchNotifications = useCallback(async () => {
     if (!user?.id) return
     
     try {
       setNotificationsLoading(true)
-      const response = await fetch(`/api/notifications?userId=${user.id}&limit=10`)
+      setNotificationsError(false)
+      
+      const response = await fetch(`/api/notifications?userId=${user.id}&limit=10`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
       if (response.ok) {
         const data = await response.json()
-        setNotifications(data.notifications)
-        setUnreadCount(data.unreadCount)
+        setNotifications(data.notifications || [])
+        setUnreadCount(data.unreadCount || 0)
+        setNotificationsError(false)
+      } else {
+        console.warn('Failed to fetch notifications:', response.status, response.statusText)
+        setNotifications([])
+        setUnreadCount(0)
+        setNotificationsError(true)
       }
     } catch (error) {
       console.error('Error fetching notifications:', error)
+      setNotifications([])
+      setUnreadCount(0)
+      setNotificationsError(true)
     } finally {
       setNotificationsLoading(false)
     }
@@ -57,7 +75,12 @@ export function Navbar({ user, onMobileMenuToggle, showMobileMenuButton = true }
 
   useEffect(() => {
     if (user?.id) {
-      fetchNotifications()
+      // Add a small delay to prevent race conditions
+      const timeoutId = setTimeout(() => {
+        fetchNotifications()
+      }, 100)
+      
+      return () => clearTimeout(timeoutId)
     }
   }, [user?.id, fetchNotifications])
 
@@ -137,6 +160,18 @@ export function Navbar({ user, onMobileMenuToggle, showMobileMenuButton = true }
                       <div className="px-4 py-6 text-center">
                         <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
                         <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
+                      </div>
+                    ) : notificationsError ? (
+                      <div className="px-4 py-6 text-center">
+                        <p className="text-sm text-red-500 mb-2">Failed to load notifications</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={fetchNotifications}
+                          className="text-xs"
+                        >
+                          Retry
+                        </Button>
                       </div>
                     ) : notifications.length === 0 ? (
                       <div className="px-4 py-6 text-center">

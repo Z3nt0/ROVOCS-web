@@ -6,8 +6,8 @@
  * It mimics the behavior of the Arduino code but runs in Node.js environment.
  */
 
-const https = require('https');
-const http = require('http');
+import https from 'https';
+import http from 'http';
 
 // Configuration (matching esp32.ino)
 const CONFIG = {

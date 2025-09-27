@@ -35,6 +35,18 @@ interface Report {
     avgTemperature: number
     avgHumidity: number
   }
+  breathAnalysis?: {
+    totalEvents: number
+    completedEvents: number
+    avgBaselineTvoc: number
+    avgBaselineEco2: number
+    avgPeakTvoc: number
+    avgPeakEco2: number
+    avgRecoveryTime: number
+    avgPeakPercent: number
+    avgTimeToPeak: number
+    avgSlope: number
+  }
 }
 
 export default function ReportsPage() {
@@ -163,30 +175,30 @@ export default function ReportsPage() {
 
         {/* Main Content */}
         <div className="flex-1 lg:ml-72">
-          <div className="py-6 pl-1 pr-4 sm:pl-2 sm:pr-6 lg:pl-2 lg:pr-8">
+          <div className="py-4 px-4 sm:py-6 sm:pl-2 sm:pr-6 lg:pl-2 lg:pr-8">
           <div className="max-w-7xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8"
+            className="mb-6 sm:mb-8"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                   Reports & Analytics
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm sm:text-base text-gray-600">
                   View and download your respiratory health analysis reports
                 </p>
               </div>
-              <div className="flex space-x-2">
-                <Button variant="outline" className="flex items-center">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                <Button variant="outline" className="flex items-center justify-center w-full sm:w-auto">
                   <Filter className="w-4 h-4 mr-2" />
                   Filter
                 </Button>
-                <Button className="bg-green-600 hover:bg-green-700">
+                <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
                   <Download className="w-4 h-4 mr-2" />
                   Export All
                 </Button>
@@ -195,20 +207,20 @@ export default function ReportsPage() {
           </motion.div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
             >
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Reports</p>
-                      <p className="text-2xl font-bold text-gray-900">{reports.length}</p>
+                    <div className="flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">Total Reports</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{reports.length}</p>
                     </div>
-                    <FileText className="w-8 h-8 text-green-600" />
+                    <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -220,15 +232,15 @@ export default function ReportsPage() {
               transition={{ delay: 0.2, duration: 0.5 }}
             >
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Readings</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                    <div className="flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">Total Readings</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
                         {reports.reduce((sum, report) => sum + report.readings, 0).toLocaleString()}
                       </p>
                     </div>
-                    <Activity className="w-8 h-8 text-blue-600" />
+                    <Activity className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -240,15 +252,15 @@ export default function ReportsPage() {
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Avg TVOC</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                    <div className="flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">Avg TVOC</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
                         {Math.round(reports.reduce((sum, report) => sum + report.summary.avgTVOC, 0) / reports.length)}
                       </p>
                     </div>
-                    <TrendingUp className="w-8 h-8 text-purple-600" />
+                    <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -260,15 +272,15 @@ export default function ReportsPage() {
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <Card>
-                <CardContent className="p-6">
+                <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Avg eCO₂</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                    <div className="flex-1">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600">Avg eCO₂</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
                         {Math.round(reports.reduce((sum, report) => sum + report.summary.avgECO2, 0) / reports.length)}
                       </p>
                     </div>
-                    <BarChart3 className="w-8 h-8 text-orange-600" />
+                    <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600 flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
@@ -277,7 +289,7 @@ export default function ReportsPage() {
 
           {/* Analytics Charts */}
           {reports.length > 0 && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -346,7 +358,7 @@ export default function ReportsPage() {
           )}
 
           {/* Reports List */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {reports.map((report, index) => (
               <motion.div
                 key={report.id}
@@ -355,62 +367,63 @@ export default function ReportsPage() {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
               >
                 <Card className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
                       <div className="flex-1">
-                        <div className="flex items-center space-x-4 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-3 sm:mb-2">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                             {report.title}
                           </h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${getStatusColor(report.status)}`}>
                             {report.status}
                           </span>
                         </div>
                         
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-0">
                           <div className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4" />
+                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span>{report.date.toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Clock className="w-4 h-4" />
+                            <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span>{report.duration}</span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Activity className="w-4 h-4" />
+                            <Activity className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span>{report.readings} readings</span>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <TrendingUp className="w-4 h-4" />
+                            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span>TVOC: {report.summary.avgTVOC.toFixed(1)} ppb</span>
                           </div>
                         </div>
 
-                        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div className="mt-3 sm:mt-4 grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                           <div>
                             <span className="text-gray-500">TVOC:</span>
-                            <span className="ml-2 font-medium">{report.summary.avgTVOC.toFixed(1)} ppb</span>
+                            <span className="ml-1 sm:ml-2 font-medium">{report.summary.avgTVOC.toFixed(1)} ppb</span>
                           </div>
                           <div>
                             <span className="text-gray-500">eCO₂:</span>
-                            <span className="ml-2 font-medium">{report.summary.avgECO2.toFixed(1)} ppm</span>
+                            <span className="ml-1 sm:ml-2 font-medium">{report.summary.avgECO2.toFixed(1)} ppm</span>
                           </div>
                           <div>
                             <span className="text-gray-500">Temp:</span>
-                            <span className="ml-2 font-medium">{report.summary.avgTemperature.toFixed(1)}°C</span>
+                            <span className="ml-1 sm:ml-2 font-medium">{report.summary.avgTemperature.toFixed(1)}°C</span>
                           </div>
                           <div>
                             <span className="text-gray-500">Humidity:</span>
-                            <span className="ml-2 font-medium">{report.summary.avgHumidity.toFixed(1)}%</span>
+                            <span className="ml-1 sm:ml-2 font-medium">{report.summary.avgHumidity.toFixed(1)}%</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2 ml-4">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 sm:ml-4">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleViewReport(report)}
+                          className="w-full sm:w-auto"
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           View
@@ -419,7 +432,7 @@ export default function ReportsPage() {
                           <Button
                             size="sm"
                             onClick={() => handleDownload(report)}
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                           >
                             <Download className="w-4 h-4 mr-2" />
                             Download
@@ -439,18 +452,18 @@ export default function ReportsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-center py-12"
+              className="text-center py-8 sm:py-12"
             >
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-12 h-12 text-gray-400" />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
                 No reports available
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-sm sm:text-base text-gray-600 mb-6">
                 Start a breathing session to generate your first report
               </p>
-              <Button className="bg-green-600 hover:bg-green-700">
+              <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
                 Start New Session
               </Button>
             </motion.div>

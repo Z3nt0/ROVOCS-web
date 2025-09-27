@@ -228,20 +228,20 @@ export default function DevicePage() {
 
         {/* Main Content */}
         <div className="flex-1 lg:ml-72">
-          <div className="py-6 pl-1 pr-4 sm:pl-2 sm:pr-6 lg:pl-2 lg:pr-8">
-          <div className="max-w-7xl mx-auto">
+          <div className="py-4 px-4 sm:py-6 sm:pl-2 sm:pr-6 lg:pl-2 lg:pr-8">
+          <div className="max-w-7xl mx-auto w-full">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8"
+            className="mb-6 sm:mb-8"
           >
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                 ESP32 Device Status
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 Monitor your connected ESP32 sensor
               </p>
             </div>
@@ -257,23 +257,23 @@ export default function DevicePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
               >
-                <Card className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-16 h-16 rounded-xl flex items-center justify-center ${
+                <Card className="hover:shadow-lg transition-shadow w-full">
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0 w-full">
+                      <div className="flex items-center space-x-3 sm:space-x-4 flex-1">
+                        <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center flex-shrink-0 ${
                           device.isConnected ? 'bg-green-100' : 'bg-red-100'
                         }`}>
-                          <Smartphone className={`w-8 h-8 ${
+                          <Smartphone className={`w-6 h-6 sm:w-8 sm:h-8 ${
                             device.isConnected ? 'text-green-600' : 'text-red-600'
                           }`} />
                         </div>
-                        <div>
-                          <CardTitle className="text-2xl">{device.name}</CardTitle>
-                          <CardDescription className="text-lg">{device.serial}</CardDescription>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-lg sm:text-2xl truncate">{device.name}</CardTitle>
+                          <CardDescription className="text-sm sm:text-lg truncate">{device.serial}</CardDescription>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -296,40 +296,40 @@ export default function DevicePage() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <span className="text-sm font-medium text-gray-700">Device Status</span>
+                  <CardContent className="pt-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700">Device Status</span>
                         <div className="flex items-center space-x-2">
                           {device.isConnected ? (
                             <>
-                              <CheckCircle className="w-5 h-5 text-green-600" />
-                              <span className="text-sm text-green-600 font-medium">Online</span>
+                              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                              <span className="text-xs sm:text-sm text-green-600 font-medium">Online</span>
                             </>
                           ) : (
                             <>
-                              <AlertCircle className="w-5 h-5 text-red-600" />
-                              <span className="text-sm text-red-600 font-medium">Offline</span>
+                              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                              <span className="text-xs sm:text-sm text-red-600 font-medium">Offline</span>
                             </>
                           )}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <span className="text-sm font-medium text-gray-700">Last Activity</span>
+                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700">Last Activity</span>
                         <div className="flex items-center space-x-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+                          <span className="text-xs sm:text-sm text-gray-600">
                             {device.lastSeen ? new Date(device.lastSeen).toLocaleString() : 'Never'}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                        <span className="text-sm font-medium text-gray-700">Total Readings</span>
+                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg sm:col-span-2 lg:col-span-1">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700">Total Readings</span>
                         <div className="flex items-center space-x-2">
-                          <Activity className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">{device.readings.toLocaleString()}</span>
+                          <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+                          <span className="text-xs sm:text-sm text-gray-600">{device.readings.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -343,23 +343,23 @@ export default function DevicePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-semibold text-gray-900">Sensor Status</h2>
-                    <p className="text-gray-600">Individual sensor readings and status</p>
+                <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0 w-full">
+                  <div className="flex-1">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Sensor Status</h2>
+                    <p className="text-sm sm:text-base text-gray-600">Individual sensor readings and status</p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => fetchDevice()}
-                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 w-full sm:w-auto flex-shrink-0"
                   >
                     <Activity className="w-4 h-4 mr-2" />
                     Refresh
                   </Button>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {getSensorStatus(device).map((sensor, index) => {
                     const IconComponent = {
                       'Cloud': Cloud,
@@ -376,32 +376,32 @@ export default function DevicePage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
                       >
-                        <Card className={`hover:shadow-lg transition-shadow border-l-4 ${
+                        <Card className={`hover:shadow-lg transition-shadow border-l-4 w-full ${
                           sensor.status === 'online' ? 'border-green-500' : 
                           sensor.status === 'offline' ? 'border-red-500' : 'border-gray-500'
                         }`}>
-                          <CardContent className="p-4">
+                          <CardContent className="p-3 sm:p-4 w-full">
                             <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center space-x-3">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                              <div className="flex items-center space-x-2 sm:space-x-3">
+                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${
                                   sensor.status === 'online' ? 'bg-green-100' : 
                                   sensor.status === 'offline' ? 'bg-red-100' : 'bg-gray-100'
                                 }`}>
-                                  <IconComponent className={`w-5 h-5 ${
+                                  <IconComponent className={`w-4 h-4 sm:w-5 sm:h-5 ${
                                     sensor.status === 'online' ? 'text-green-600' : 
                                     sensor.status === 'offline' ? 'text-red-600' : 'text-gray-600'
                                   }`} />
                                 </div>
                                 <div>
-                                  <h3 className="font-medium text-gray-900">{sensor.name}</h3>
+                                  <h3 className="text-sm sm:text-base font-medium text-gray-900">{sensor.name}</h3>
                                   <p className="text-xs text-gray-500">{sensor.type}</p>
                                 </div>
                               </div>
                               <div className="flex items-center space-x-1">
                                 {sensor.status === 'online' ? (
-                                  <CheckCircle className="w-4 h-4 text-green-600" />
+                                  <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                                 ) : (
-                                  <AlertCircle className="w-4 h-4 text-red-600" />
+                                  <AlertCircle className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
                                 )}
                                 <span className={`text-xs font-medium ${
                                   sensor.status === 'online' ? 'text-green-600' : 'text-red-600'
@@ -413,19 +413,19 @@ export default function DevicePage() {
                             
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Current Value</span>
-                                <span className="text-lg font-semibold text-gray-900">
+                                <span className="text-xs sm:text-sm text-gray-600">Current Value</span>
+                                <span className="text-sm sm:text-lg font-semibold text-gray-900">
                                   {sensor.value !== null && sensor.value !== undefined ? `${sensor.value.toFixed(1)} ${sensor.unit}` : 'N/A'}
                                 </span>
                               </div>
                               
                               <div className="flex items-center justify-between">
-                                <span className="text-sm text-gray-600">Status</span>
+                                <span className="text-xs sm:text-sm text-gray-600">Status</span>
                                 <div className="flex items-center space-x-2">
                                   <div className={`w-2 h-2 rounded-full ${
                                     sensor.status === 'online' ? 'bg-green-500' : 'bg-red-500'
                                   }`} />
-                                  <span className="text-sm text-gray-600">
+                                  <span className="text-xs sm:text-sm text-gray-600">
                                     {sensor.status === 'online' ? 'Active' : 'Inactive'}
                                   </span>
                                 </div>
@@ -444,16 +444,16 @@ export default function DevicePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="text-center py-12"
+              className="text-center py-8 sm:py-12 w-full"
             >
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Smartphone className="w-12 h-12 text-gray-400" />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Smartphone className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No device connected</h3>
-              <p className="text-gray-600 mb-6">Connect your ESP32 sensor to start monitoring</p>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No device connected</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-6">Connect your ESP32 sensor to start monitoring</p>
               <Button
                 onClick={() => setIsConnectModalOpen(true)}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto max-w-xs mx-auto"
               >
                 <Wifi className="w-4 h-4 mr-2" />
                 Connect ESP32 Device

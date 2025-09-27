@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Activity, Thermometer, Droplets, Wind, Wifi, WifiOff, AlertCircle, CheckCircle } from 'lucide-react'
+import { Activity, Thermometer, Droplets, Wind, Wifi, WifiOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
 
 interface SessionData {
   name: string
@@ -22,6 +22,36 @@ interface Reading {
   recordedAt: string
 }
 
+interface BreathAnalysisData {
+  baseline?: {
+    tvoc: number
+    eco2: number
+    sampleCount: number
+    isStable: boolean
+    lastUpdated: string
+  }
+  currentEvent?: {
+    startTime: string
+    endTime?: string
+    peakTime?: string
+    peakTvoc?: number
+    peakEco2?: number
+    baselineTvoc: number
+    baselineEco2: number
+    isComplete: boolean
+  }
+  metrics?: Array<{
+    metricType: string
+    baseline: number
+    peak: number
+    peakPercent: number
+    timeToPeak?: number
+    slope?: number
+    recoveryTime?: number
+    threshold?: number
+  }>
+}
+
 interface RealTimeSessionProps {
   sessionData: SessionData
   onEndSession: () => void
@@ -31,6 +61,7 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
   const [isConnected, setIsConnected] = useState(false)
   const [readings, setReadings] = useState<Reading[]>([])
   const [currentReading, setCurrentReading] = useState<Reading | null>(null)
+  const [breathAnalysis, setBreathAnalysis] = useState<BreathAnalysisData | null>(null)
   const [sessionTime, setSessionTime] = useState(0)
   const [isSessionActive, setIsSessionActive] = useState(true)
   const [isSessionComplete, setIsSessionComplete] = useState(false)
@@ -132,7 +163,14 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
           const data = await response.json()
           if (data.reading && data.isRecent) {
             setCurrentReading(data.reading)
-            setReadings(prev => [data.reading, ...prev.slice(0, 9)]) // Keep last 10 readings
+            setReadings(prev => {
+              // Avoid duplicates by checking if reading already exists
+              const exists = prev.some(r => r.id === data.reading.id)
+              if (!exists) {
+                return [data.reading, ...prev.slice(0, 19)] // Keep last 20 readings
+              }
+              return prev
+            })
             setIsConnected(true)
             setError('')
           } else if (data.reading && !data.isRecent) {
@@ -154,8 +192,44 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
       }
     }
 
+    const fetchBreathAnalysis = async () => {
+      try {
+        const response = await fetch(`/api/breath-analysis/process`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: sessionData.deviceId, // Using deviceId as sessionId for now
+            deviceId: sessionData.deviceId,
+            tvoc: currentReading?.tvoc || 0,
+            eco2: currentReading?.eco2 || 0,
+            temperature: currentReading?.temperature || 0,
+            humidity: currentReading?.humidity || 0
+          })
+        })
+        
+        if (response.ok) {
+          const analysisData = await response.json()
+          if (analysisData.baseline || analysisData.currentEvent || analysisData.metrics) {
+            setBreathAnalysis({
+              baseline: analysisData.baseline,
+              currentEvent: analysisData.currentEvent,
+              metrics: analysisData.metrics
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching breath analysis:', error)
+      }
+    }
+
     // Fetch readings every 2 seconds
-    intervalRef.current = setInterval(fetchReadings, 2000)
+    intervalRef.current = setInterval(async () => {
+      await fetchReadings()
+      if (currentReading) {
+        await fetchBreathAnalysis()
+      }
+    }, 2000)
+    
     fetchReadings() // Initial fetch
 
     return () => {
@@ -163,7 +237,7 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
         clearInterval(intervalRef.current)
       }
     }
-  }, [sessionData.deviceId])
+  }, [sessionData.deviceId, currentReading])
 
 
 
@@ -196,10 +270,6 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
               <p className="text-gray-600">Real-time respiratory analysis session</p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <div className="text-2xl font-bold text-green-600">{formatTime(sessionTime)}</div>
-                <div className="text-sm text-gray-500">Session Time</div>
-              </div>
               <div className="flex items-center space-x-2">
                 {isConnected ? (
                   <Wifi className="w-5 h-5 text-green-500" />
@@ -219,7 +289,7 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center space-x-2"
+              className="mb-6 p-3 bg-red-50 border border-red-200 rounded-md flex items-center space-x-2"
             >
               <AlertCircle className="w-5 h-5 text-red-600" />
               <p className="text-sm text-red-600">{error}</p>
@@ -228,65 +298,65 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Real-time Metrics */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-6">
               <h3 className="text-lg font-semibold text-gray-900">Live Sensor Data</h3>
               
               {currentReading ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
+                <div className="grid grid-cols-2 gap-6">
+                  <Card className="h-44 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
                       <CardTitle className="text-sm font-medium flex items-center">
                         <Wind className="w-4 h-4 mr-2 text-blue-500" />
                         TVOC Level
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-blue-600">
+                    <CardContent className="flex-1 flex flex-col justify-center">
+                      <div className="text-3xl font-bold text-blue-600 mb-1">
                         {currentReading.tvoc.toFixed(1)}
                       </div>
                       <p className="text-xs text-gray-500">ppb (parts per billion)</p>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader className="pb-2">
+                  <Card className="h-44 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
                       <CardTitle className="text-sm font-medium flex items-center">
                         <Activity className="w-4 h-4 mr-2 text-green-500" />
                         eCO₂ Level
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-green-600">
+                    <CardContent className="flex-1 flex flex-col justify-center">
+                      <div className="text-3xl font-bold text-green-600 mb-1">
                         {currentReading.eco2.toFixed(0)}
                       </div>
                       <p className="text-xs text-gray-500">ppm (parts per million)</p>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader className="pb-2">
+                  <Card className="h-44 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
                       <CardTitle className="text-sm font-medium flex items-center">
                         <Thermometer className="w-4 h-4 mr-2 text-orange-500" />
                         Temperature
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-orange-600">
+                    <CardContent className="flex-1 flex flex-col justify-center">
+                      <div className="text-3xl font-bold text-orange-600 mb-1">
                         {currentReading.temperature.toFixed(1)}°C
                       </div>
                       <p className="text-xs text-gray-500">Ambient temperature</p>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader className="pb-2">
+                  <Card className="h-44 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
                       <CardTitle className="text-sm font-medium flex items-center">
                         <Droplets className="w-4 h-4 mr-2 text-cyan-500" />
                         Humidity
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-cyan-600">
+                    <CardContent className="flex-1 flex flex-col justify-center">
+                      <div className="text-3xl font-bold text-cyan-600 mb-1">
                         {currentReading.humidity.toFixed(1)}%
                       </div>
                       <p className="text-xs text-gray-500">Relative humidity</p>
@@ -294,7 +364,7 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
                   </Card>
                 </div>
               ) : (
-                <div className="text-center py-8">
+                <div className="text-center py-12">
                   <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                   <p className="text-gray-600">Waiting for sensor data...</p>
                 </div>
@@ -302,33 +372,166 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
 
               {/* Status */}
               {currentReading && (
-                <div className="grid grid-cols-1 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
+                <div className="w-full">
+                  <Card className="h-44 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
                       <CardTitle className="text-sm font-medium flex items-center">
                         <CheckCircle className="w-4 h-4 mr-2 text-gray-500" />
                         Status
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className={`text-lg font-bold ${getStatusColor(currentReading.statusMsg)}`}>
+                    <CardContent className="flex-1 flex flex-col justify-center">
+                      <div className={`text-2xl font-bold ${getStatusColor(currentReading.statusMsg)}`}>
                         {currentReading.statusMsg}
                       </div>
                     </CardContent>
                   </Card>
                 </div>
               )}
+
+              {/* Breath Analysis Metrics */}
+              {breathAnalysis && (
+                <div className="space-y-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Breath Analysis</h3>
+                  
+                  {/* Baseline Status */}
+                  {breathAnalysis.baseline && (
+                    <Card className="shadow-sm hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center">
+                          <Activity className="w-4 h-4 mr-2 text-blue-500" />
+                          Baseline Status
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <div className="text-sm text-gray-500 mb-1">TVOC Baseline</div>
+                            <div className="text-xl font-bold text-blue-600 mb-1">
+                              {breathAnalysis.baseline.tvoc.toFixed(1)} ppb
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {breathAnalysis.baseline.isStable ? 'Stable' : 'Calibrating...'}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-500 mb-1">eCO₂ Baseline</div>
+                            <div className="text-xl font-bold text-green-600 mb-1">
+                              {breathAnalysis.baseline.eco2.toFixed(0)} ppm
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Samples: {breathAnalysis.baseline.sampleCount}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Current Breath Event */}
+                  {breathAnalysis.currentEvent && (
+                    <Card className="shadow-sm hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center">
+                          <Wind className="w-4 h-4 mr-2 text-purple-500" />
+                          Breath Event
+                          {breathAnalysis.currentEvent.isComplete ? (
+                            <CheckCircle className="w-4 h-4 ml-2 text-green-500" />
+                          ) : (
+                            <div className="w-4 h-4 ml-2 bg-yellow-500 rounded-full animate-pulse" />
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <div className="text-sm text-gray-500 mb-1">Peak TVOC</div>
+                            <div className="text-xl font-bold text-purple-600">
+                              {breathAnalysis.currentEvent.peakTvoc?.toFixed(1) || 'N/A'} ppb
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-sm text-gray-500 mb-1">Peak eCO₂</div>
+                            <div className="text-xl font-bold text-purple-600">
+                              {breathAnalysis.currentEvent.peakEco2?.toFixed(0) || 'N/A'} ppm
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3 text-xs text-gray-500">
+                          Status: {breathAnalysis.currentEvent.isComplete ? 'Complete' : 'In Progress'}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Analysis Metrics */}
+                  {breathAnalysis.metrics && breathAnalysis.metrics.length > 0 && (
+                    <Card className="shadow-sm hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center">
+                          <Thermometer className="w-4 h-4 mr-2 text-orange-500" />
+                          Analysis Metrics
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {breathAnalysis.metrics.map((metric, index) => (
+                            <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                              <div className="text-sm font-medium text-gray-700 mb-3">
+                                {metric.metricType.toUpperCase()} Analysis
+                              </div>
+                              <div className="grid grid-cols-2 gap-3 text-xs">
+                                <div>
+                                  <span className="text-gray-500">Peak %:</span>
+                                  <span className="ml-1 font-semibold text-blue-600">
+                                    {metric.peakPercent.toFixed(1)}%
+                                  </span>
+                                </div>
+                                {metric.timeToPeak && (
+                                  <div>
+                                    <span className="text-gray-500">Time to Peak:</span>
+                                    <span className="ml-1 font-semibold text-green-600">
+                                      {metric.timeToPeak.toFixed(1)}s
+                                    </span>
+                                  </div>
+                                )}
+                                {metric.slope && (
+                                  <div>
+                                    <span className="text-gray-500">Slope:</span>
+                                    <span className="ml-1 font-semibold text-purple-600">
+                                      {metric.slope.toFixed(2)} ppb/s
+                                    </span>
+                                  </div>
+                                )}
+                                {metric.recoveryTime && (
+                                  <div>
+                                    <span className="text-gray-500">Recovery:</span>
+                                    <span className="ml-1 font-semibold text-orange-600">
+                                      {metric.recoveryTime.toFixed(1)}s
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
+
             </div>
 
             {/* Session Controls & History */}
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
+            <div className="space-y-6">
+              <Card className="h-72 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium">Session Controls</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="flex-1 flex flex-col justify-center space-y-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-green-600">
+                    <div className="text-4xl font-bold text-green-600 mb-2">
                       {formatTime(sessionTime)}
                     </div>
                     <div className="text-sm text-gray-500">
@@ -338,7 +541,7 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
                   
                   <Button 
                     onClick={handleEndSession}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white py-3"
                     disabled={!isSessionActive}
                   >
                     End Session
@@ -346,38 +549,83 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium">Recent Readings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {readings.slice(0, 5).map((reading, index) => (
-                      <motion.div
-                        key={`${reading.id}-${index}-${reading.recordedAt}`}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex justify-between items-center p-2 bg-gray-50 rounded"
+              <Card className="h-72 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center justify-between">
+                    <span>Recent Readings</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-gray-500 font-normal">
+                        {readings.length} total
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          // Force refresh readings
+                          setReadings([])
+                        }}
+                        className="h-6 w-6 p-0 hover:bg-gray-100"
                       >
-                        <div>
-                          <div className="text-sm font-medium">
-                            TVOC: {reading.tvoc.toFixed(1)} ppb
+                        <RefreshCw className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  <div className="space-y-3">
+                    {readings.length > 0 ? (
+                      readings.slice(0, 1).map((reading, index) => (
+                        <motion.div
+                          key={`${reading.id}-${index}-${reading.recordedAt}`}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="flex justify-between items-center p-4 rounded-lg border bg-green-50 border-green-200 shadow-sm"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-4 text-sm mb-2">
+                              <div className="flex items-center space-x-1">
+                                <Wind className="w-4 h-4 text-green-600" />
+                                <span className="font-medium text-green-700">
+                                  {reading.tvoc.toFixed(1)} ppb
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Activity className="w-4 h-4 text-blue-600" />
+                                <span className="font-medium text-blue-700">
+                                  {reading.eco2.toFixed(0)} ppm
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="text-xs text-gray-500">
+                                {new Date(reading.recordedAt).toLocaleTimeString()}
+                              </div>
+                              <div className="text-xs text-green-600 font-medium">
+                                Latest Reading
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(reading.recordedAt).toLocaleTimeString()}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm">
-                            eCO₂: {reading.eco2.toFixed(0)} ppm
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="w-8 h-8 border-2 border-gray-300 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                        <p className="text-sm text-gray-500">Waiting for readings...</p>
+                      </div>
+                    )}
                   </div>
+
+                  {readings.length > 2 && (
+                    <div className="mt-4 text-center">
+                      <div className="text-xs text-gray-500">
+                        Latest 2 readings of {readings.length} total
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
+
             </div>
           </div>
         </div>
