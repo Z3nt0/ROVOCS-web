@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  devices       Device[]
+  reports       Report[]
+  breathSessions BreathSession[]
+}
+
+model Device {
+  id          String   @id @default(cuid())
+  name        String
+  serial      String   @unique
+  user        User?    @relation(fields: [userId], references: [id])
+  userId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  readings    Reading[]
+  reports     Report[]
+  breathSessions BreathSession[]
+}
+
+model Reading {
+  id          String   @id @default(cuid())
+  device      Device   @relation(fields: [deviceId], references: [id])
+  deviceId    String
+  tvoc        Float    // ppb
+  eco2        Float    // ppm
+  temperature Float    // °C
+  humidity    Float    // %
+  statusMsg   String?  // e.g. "Good distance"
+  recordedAt  DateTime @default(now())
+
+  @@index([deviceId])
+  @@index([recordedAt])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  device     Device   @relation(fields: [deviceId], references: [id])
+  deviceId   String
+  from       DateTime
+  to         DateTime
+  fileUrl    String   // Storage path (S3/Cloud)
+  createdAt  DateTime @default(now())
+}
+
+model BreathSession {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  device      Device   @relation(fields: [deviceId], references: [id])
+  deviceId    String
+  name        String
+  startTime   DateTime
+  endTime     DateTime?
+  isActive    Boolean  @default(true)
+  baselineTvoc Float?  // Baseline TVOC value
+  baselineEco2 Float?  // Baseline eCO2 value
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  breathEvents BreathEvent[]
+  breathMetrics BreathMetrics[]
+}
+
+model BreathEvent {
+  id            String        @id @default(cuid())
+  session       BreathSession @relation(fields: [sessionId], references: [id])
+  sessionId     String
+  startTime     DateTime
+  endTime       DateTime?
+  peakTime      DateTime?
+  peakTvoc      Float?
+  peakEco2      Float?
+  baselineTvoc  Float
+  baselineEco2  Float
+  isComplete    Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  breathMetrics BreathMetrics[]
+}
+
+model BreathMetrics {
+  id            String        @id @default(cuid())
+  session       BreathSession @relation(fields: [sessionId], references: [id])
+  sessionId     String
+  event         BreathEvent?  @relation(fields: [eventId], references: [id])
+  eventId       String?
+  metricType   String        // 'tvoc' or 'eco2'
+  baseline      Float         // Baseline value
+  peak         Float         // Peak value
+  peakPercent  Float         // Peak % increase over baseline
+  timeToPeak   Float?        // T_peak in seconds
+  slope        Float?        // Rate of rise to peak (ppb/s or ppm/s)
+  recoveryTime Float?        // T_rec in seconds
+  threshold    Float?        // Recovery threshold used
+  calculatedAt DateTime      @default(now())
+}
