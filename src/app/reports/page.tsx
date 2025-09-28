@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { DashboardSidebar } from '@/components/dashboard-sidebar'
-import { Navbar } from '@/components/navbar'
-import { ReportViewerModal } from '@/components/report-viewer-modal'
-import { AnalyticsChart } from '@/components/analytics-chart'
+import { DashboardLayout } from '@/components/dashboard/dashboard-layout'
+import { ReportViewerModal } from '@/components/reports/report-viewer-modal'
+import { AnalyticsChart } from '@/components/dashboard/analytics-chart'
+import { StartSessionModal } from '@/components/device/start-session-modal'
 import { 
   FileText, 
   Download, 
@@ -20,6 +20,7 @@ import {
   Filter,
   Eye
 } from 'lucide-react'
+import { generateReportPDF, ReportData } from '@/lib/analysis/pdf-generator'
 
 interface Report {
   id: string
@@ -29,6 +30,7 @@ interface Report {
   readings: number
   status: 'completed' | 'processing' | 'failed'
   fileUrl?: string
+  device?: { name: string; serial: string } | null
   summary: {
     avgTVOC: number
     avgECO2: number
@@ -55,8 +57,15 @@ export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
   const [isViewerOpen, setIsViewerOpen] = useState(false)
   const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [downloadingReportId, setDownloadingReportId] = useState<string | null>(null)
+  const [isStartSessionModalOpen, setIsStartSessionModalOpen] = useState(false)
   const router = useRouter()
+
+  // Helper function to safely calculate averages
+  const calculateAverage = (reports: Report[], getValue: (report: Report) => number): number => {
+    if (reports.length === 0) return 0
+    return Math.round(reports.reduce((sum, report) => sum + getValue(report), 0) / reports.length)
+  }
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -73,23 +82,102 @@ export default function ReportsPage() {
       const response = await fetch(`/api/reports?userId=${user?.id}`)
       if (response.ok) {
         const data = await response.json()
-        // Transform API data to match our interface
-        const transformedReports = data.reports.map((report: { id: string; from: string; createdAt: string; to: string; readings: Array<{ tvoc: number; eco2: number; temperature: number; humidity: number }> }) => ({
-          id: report.id,
-          title: `Session Report - ${new Date(report.from).toLocaleDateString()}`,
-          date: new Date(report.createdAt),
-          duration: 'N/A', // Calculate from from/to dates if needed
-          readings: 0, // Would need to count readings in date range
-          status: 'completed',
-          fileUrl: undefined, // Reports don't have file URLs in current implementation
-          summary: {
-            avgTVOC: 0, // Would need to calculate from readings
-            avgECO2: 0,
-            avgTemperature: 0,
-            avgHumidity: 0
-          }
-        }))
-        setReports(transformedReports)
+        
+        // Fetch detailed data for each report
+        const detailedReports = await Promise.all(
+          data.reports.map(async (report: { 
+            id: string; 
+            from: string; 
+            createdAt: string; 
+            to: string; 
+            device?: { name: string; serial: string } | null;
+          }) => {
+            try {
+              // Fetch detailed report data with readings and analytics
+              const detailResponse = await fetch(`/api/reports/${report.id}`)
+              if (detailResponse.ok) {
+                const detailData = await detailResponse.json()
+                
+                // Calculate duration
+                const fromDate = new Date(report.from)
+                const toDate = new Date(report.to)
+                const durationMs = toDate.getTime() - fromDate.getTime()
+                const durationMins = Math.floor(durationMs / 60000)
+                const durationHours = Math.floor(durationMins / 60)
+                const remainingMins = durationMins % 60
+                const duration = durationHours > 0 ? `${durationHours}h ${remainingMins}m` : `${durationMins}m`
+                
+                return {
+                  id: report.id,
+                  title: `Session Report - ${fromDate.toLocaleDateString()}${report.device ? ` (${report.device.name})` : ' (Device Removed)'}`,
+                  date: new Date(report.createdAt),
+                  duration: duration,
+                  readings: detailData.readings?.length || 0,
+                  status: 'completed',
+                  fileUrl: detailData.fileUrl,
+                  summary: {
+                    avgTVOC: detailData.analytics?.avgTVOC || 0,
+                    avgECO2: detailData.analytics?.avgECO2 || 0,
+                    avgTemperature: detailData.analytics?.avgTemperature || 0,
+                    avgHumidity: detailData.analytics?.avgHumidity || 0
+                  },
+                  device: report.device,
+                  breathAnalysis: detailData.analytics ? {
+                    totalEvents: 0,
+                    completedEvents: 0,
+                    avgBaselineTvoc: detailData.analytics.avgTVOC,
+                    avgBaselineEco2: detailData.analytics.avgECO2,
+                    avgPeakTvoc: detailData.analytics.maxTVOC,
+                    avgPeakEco2: detailData.analytics.maxECO2,
+                    avgRecoveryTime: 0,
+                    avgPeakPercent: detailData.analytics.maxTVOC > 0 ? ((detailData.analytics.maxTVOC - detailData.analytics.avgTVOC) / detailData.analytics.avgTVOC) * 100 : 0,
+                    avgTimeToPeak: 0,
+                    avgSlope: 0
+                  } : undefined
+                }
+              } else {
+                // Fallback to basic data if detailed fetch fails
+                return {
+                  id: report.id,
+                  title: `Session Report - ${new Date(report.from).toLocaleDateString()}${report.device ? ` (${report.device.name})` : ' (Device Removed)'}`,
+                  date: new Date(report.createdAt),
+                  duration: 'N/A',
+                  readings: 0,
+                  status: 'completed',
+                  fileUrl: undefined,
+                  summary: {
+                    avgTVOC: 0,
+                    avgECO2: 0,
+                    avgTemperature: 0,
+                    avgHumidity: 0
+                  },
+                  device: report.device
+                }
+              }
+            } catch (error) {
+              console.error(`Error fetching details for report ${report.id}:`, error)
+              // Return basic data on error
+              return {
+                id: report.id,
+                title: `Session Report - ${new Date(report.from).toLocaleDateString()}${report.device ? ` (${report.device.name})` : ' (Device Removed)'}`,
+                date: new Date(report.createdAt),
+                duration: 'N/A',
+                readings: 0,
+                status: 'completed',
+                fileUrl: undefined,
+                summary: {
+                  avgTVOC: 0,
+                  avgECO2: 0,
+                  avgTemperature: 0,
+                  avgHumidity: 0
+                },
+                device: report.device
+              }
+            }
+          })
+        )
+        
+        setReports(detailedReports)
       }
     } catch (error) {
       console.error('Error fetching reports:', error)
@@ -104,15 +192,36 @@ export default function ReportsPage() {
     }
   }, [user, fetchReports])
 
-  const handleDownload = (report: Report) => {
-    if (report.fileUrl) {
-      // Create a temporary link to download the file
-      const link = document.createElement('a')
-      link.href = report.fileUrl
-      link.download = `${report.title}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+  const handleDownload = async (report: Report) => {
+    setDownloadingReportId(report.id)
+    try {
+      // Convert Report interface to ReportData interface for PDF generation
+      const reportData: ReportData = {
+        id: report.id,
+        title: report.title,
+        date: report.date,
+        duration: report.duration,
+        readingCount: report.readings,
+        status: report.status,
+        summary: report.summary,
+        breathAnalysis: report.breathAnalysis,
+        device: undefined // Will be populated if available
+      }
+
+      await generateReportPDF(reportData)
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      // Fallback to original download if PDF generation fails
+      if (report.fileUrl) {
+        const link = document.createElement('a')
+        link.href = report.fileUrl
+        link.download = `${report.title}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
+    } finally {
+      setDownloadingReportId(null)
     }
   }
 
@@ -127,9 +236,19 @@ export default function ReportsPage() {
     setSelectedReport(null)
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('user')
-    router.push('/')
+
+  const handleStartSession = () => {
+    setIsStartSessionModalOpen(true)
+  }
+
+  const handleSessionStart = (sessionData: { name: string; deviceId: string; duration: number }) => {
+    console.log('Starting session:', sessionData)
+    // Close the modal
+    setIsStartSessionModalOpen(false)
+    // Optionally refresh reports after starting a session
+    if (user?.id) {
+      fetchReports()
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -162,21 +281,9 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <Navbar 
-        user={user} 
-        onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      />
-
-      <div className="flex">
-        {/* Sidebar */}
-        <DashboardSidebar user={user} onLogout={handleLogout} />
-
-        {/* Main Content */}
-        <div className="flex-1 lg:ml-72">
-          <div className="py-4 px-4 sm:py-6 sm:pl-2 sm:pr-6 lg:pl-2 lg:pr-8">
-          <div className="max-w-7xl mx-auto">
+    <DashboardLayout>
+      <div className="py-4 px-4 sm:py-6 sm:pl-2 sm:pr-6 lg:pl-2 lg:pr-8">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -257,7 +364,7 @@ export default function ReportsPage() {
                     <div className="flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-600">Avg TVOC</p>
                       <p className="text-lg sm:text-2xl font-bold text-gray-900">
-                        {Math.round(reports.reduce((sum, report) => sum + report.summary.avgTVOC, 0) / reports.length)}
+                        {calculateAverage(reports, report => report.summary.avgTVOC)}
                       </p>
                     </div>
                     <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 flex-shrink-0" />
@@ -277,7 +384,7 @@ export default function ReportsPage() {
                     <div className="flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-600">Avg eCO₂</p>
                       <p className="text-lg sm:text-2xl font-bold text-gray-900">
-                        {Math.round(reports.reduce((sum, report) => sum + report.summary.avgECO2, 0) / reports.length)}
+                        {calculateAverage(reports, report => report.summary.avgECO2)}
                       </p>
                     </div>
                     <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600 flex-shrink-0" />
@@ -300,25 +407,25 @@ export default function ReportsPage() {
                   data={[
                     {
                       label: 'TVOC (ppb)',
-                      value: Math.round(reports.reduce((sum, report) => sum + report.summary.avgTVOC, 0) / reports.length),
+                      value: calculateAverage(reports, report => report.summary.avgTVOC),
                       color: '#10b981',
                       trend: 'up'
                     },
                     {
                       label: 'eCO₂ (ppm)',
-                      value: Math.round(reports.reduce((sum, report) => sum + report.summary.avgECO2, 0) / reports.length),
+                      value: calculateAverage(reports, report => report.summary.avgECO2),
                       color: '#3b82f6',
                       trend: 'stable'
                     },
                     {
                       label: 'Temperature (°C)',
-                      value: Math.round(reports.reduce((sum, report) => sum + report.summary.avgTemperature, 0) / reports.length),
+                      value: calculateAverage(reports, report => report.summary.avgTemperature),
                       color: '#f59e0b',
                       trend: 'stable'
                     },
                     {
                       label: 'Humidity (%)',
-                      value: Math.round(reports.reduce((sum, report) => sum + report.summary.avgHumidity, 0) / reports.length),
+                      value: calculateAverage(reports, report => report.summary.avgHumidity),
                       color: '#06b6d4',
                       trend: 'down'
                     }
@@ -394,7 +501,7 @@ export default function ReportsPage() {
                           </div>
                           <div className="flex items-center space-x-2">
                             <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                            <span>TVOC: {report.summary.avgTVOC.toFixed(1)} ppb</span>
+                            <span>Session Complete</span>
                           </div>
                         </div>
 
@@ -432,10 +539,24 @@ export default function ReportsPage() {
                           <Button
                             size="sm"
                             onClick={() => handleDownload(report)}
-                            className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                            disabled={downloadingReportId === report.id}
+                            className="bg-green-600 hover:bg-green-700 w-full sm:w-auto disabled:opacity-50"
                           >
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
+                            {downloadingReportId === report.id ? (
+                              <>
+                                <motion.div
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                  className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full"
+                                />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Download className="w-4 h-4 mr-2" />
+                                Download PDF
+                              </>
+                            )}
                           </Button>
                         )}
                       </div>
@@ -463,24 +584,32 @@ export default function ReportsPage() {
               <p className="text-sm sm:text-base text-gray-600 mb-6">
                 Start a breathing session to generate your first report
               </p>
-              <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
+              <Button 
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+                onClick={handleStartSession}
+              >
                 Start New Session
               </Button>
             </motion.div>
           )}
-          </div>
-          </div>
         </div>
-      </div>
 
-      {/* Report Viewer Modal */}
-      {selectedReport && (
-        <ReportViewerModal
-          isOpen={isViewerOpen}
-          onClose={handleCloseViewer}
-          reportId={selectedReport.id}
+        {/* Report Viewer Modal */}
+        {selectedReport && (
+          <ReportViewerModal
+            isOpen={isViewerOpen}
+            onClose={handleCloseViewer}
+            reportId={selectedReport.id}
+          />
+        )}
+
+        {/* Start Session Modal */}
+        <StartSessionModal
+          isOpen={isStartSessionModalOpen}
+          onClose={() => setIsStartSessionModalOpen(false)}
+          onStartSession={handleSessionStart}
         />
-      )}
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }

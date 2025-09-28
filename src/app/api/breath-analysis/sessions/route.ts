@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '../../../../lib/prisma'
+import prisma from '@/lib/database/prisma'
 
 // POST /api/breath-analysis/sessions - Create a new breath analysis session
 export async function POST(request: NextRequest) {

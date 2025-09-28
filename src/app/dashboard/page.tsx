@@ -3,20 +3,20 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { DashboardSidebar } from '@/components/dashboard-sidebar'
-import { Navbar } from '@/components/navbar'
-import { StartSessionModal } from '@/components/start-session-modal'
-import { ScheduleTestModal } from '@/components/schedule-test-modal'
-import { RealTimeSession } from '@/components/real-time-session'
+import { DashboardLayout } from '@/components/dashboard/dashboard-layout'
+import { StartSessionModal } from '@/components/device/start-session-modal'
+import { ScheduleTestModal } from '@/components/device/schedule-test-modal'
+import { RealTimeSession } from '@/components/dashboard/real-time-session'
 import { Activity, BarChart3, FileText, Smartphone, TrendingUp, Clock } from 'lucide-react'
 
-interface User {
-  id: string
-  name: string
-  email: string
-}
+// interface User {
+//   id: string
+//   name: string
+//   email: string
+// }
 
 interface DashboardStats {
   devices: {
@@ -43,9 +43,8 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null)
+  const { data: session, status } = useSession()
   const [isLoading, setIsLoading] = useState(true)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [statsLoading, setStatsLoading] = useState(true)
   const [isStartSessionModalOpen, setIsStartSessionModalOpen] = useState(false)
@@ -68,7 +67,7 @@ export default function DashboardPage() {
   const fetchDashboardStats = useCallback(async () => {
     try {
       setStatsLoading(true)
-      const response = await fetch(`/api/dashboard/stats?userId=${user?.id}`)
+      const response = await fetch(`/api/dashboard/stats?userId=${session?.user?.id}`)
       if (response.ok) {
         const data = await response.json()
         setStats(data)
@@ -78,12 +77,12 @@ export default function DashboardPage() {
     } finally {
       setStatsLoading(false)
     }
-  }, [user?.id])
+  }, [session?.user?.id])
 
   const fetchActivity = useCallback(async () => {
     try {
       setActivityLoading(true)
-      const response = await fetch(`/api/activity?userId=${user?.id}&limit=10`)
+      const response = await fetch(`/api/activity?userId=${session?.user?.id}&limit=10`)
       if (response.ok) {
         const data = await response.json()
         setActivity(data)
@@ -93,30 +92,172 @@ export default function DashboardPage() {
     } finally {
       setActivityLoading(false)
     }
-  }, [user?.id])
+  }, [session?.user?.id])
 
 
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      setUser(JSON.parse(userData))
-    } else {
-      router.push('/auth/login')
+    if (status === 'loading') {
+      setIsLoading(true)
+    } else if (status === 'unauthenticated') {
+      // Check if we have a stored session first
+      const storedSession = localStorage.getItem('user-session')
+      if (storedSession) {
+        const sessionData = JSON.parse(storedSession)
+        const timeDiff = Date.now() - sessionData.timestamp
+        // If session is less than 24 hours old, don't redirect at all
+        if (timeDiff < 24 * 60 * 60 * 1000) {
+          console.log('Recent session found, staying on dashboard')
+          // Try to restore session immediately
+          fetch('/api/auth/session', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+              if (data?.user) {
+                console.log('Session restored successfully')
+                localStorage.setItem('user-session', JSON.stringify({
+                  userId: data.user.id,
+                  timestamp: Date.now()
+                }))
+              }
+            })
+            .catch(error => console.log('Session restoration failed:', error))
+          return
+        }
+      }
+      
+      // Only redirect if no valid stored session
+      const timer = setTimeout(() => {
+        router.push('/auth/login')
+      }, 3000) // Increased delay to 3 seconds
+      return () => clearTimeout(timer)
+    } else if (status === 'authenticated') {
+      setIsLoading(false)
     }
-    setIsLoading(false)
-  }, [router])
+  }, [status, router])
 
   useEffect(() => {
-    if (user?.id) {
+    if (session?.user?.id) {
       fetchDashboardStats()
       fetchActivity()
     }
-  }, [user, fetchDashboardStats, fetchActivity])
+  }, [session?.user?.id, fetchDashboardStats, fetchActivity])
 
-  const handleLogout = () => {
-    localStorage.removeItem('user')
-    router.push('/')
-  }
+  // Add session refresh mechanism
+  useEffect(() => {
+    const refreshSession = async () => {
+      if (status === 'authenticated' && session?.user) {
+        // Store session info in localStorage as backup
+        localStorage.setItem('user-session', JSON.stringify({
+          userId: session.user.id,
+          timestamp: Date.now()
+        }))
+
+        // Refresh session every 5 minutes to keep it alive
+        const interval = setInterval(async () => {
+          try {
+            const response = await fetch('/api/auth/session', { method: 'GET' })
+            if (response.ok) {
+              const sessionData = await response.json()
+              if (sessionData?.user) {
+                // Update localStorage with fresh session data
+                localStorage.setItem('user-session', JSON.stringify({
+                  userId: sessionData.user.id,
+                  timestamp: Date.now()
+                }))
+              }
+            }
+          } catch (error) {
+            console.log('Session refresh failed:', error)
+          }
+        }, 5 * 60 * 1000) // 5 minutes
+
+        return () => clearInterval(interval)
+      } else if (status === 'unauthenticated') {
+        // Try to restore session if we have stored data
+        const storedSession = localStorage.getItem('user-session')
+        if (storedSession) {
+          const sessionData = JSON.parse(storedSession)
+          const timeDiff = Date.now() - sessionData.timestamp
+          if (timeDiff < 24 * 60 * 60 * 1000) {
+            // Try to refresh the session immediately
+            try {
+              const response = await fetch('/api/auth/session', { method: 'GET' })
+              if (response.ok) {
+                const sessionData = await response.json()
+                if (sessionData?.user) {
+                  console.log('Session restored on mount')
+                  localStorage.setItem('user-session', JSON.stringify({
+                    userId: sessionData.user.id,
+                    timestamp: Date.now()
+                  }))
+                }
+              }
+            } catch (error) {
+              console.log('Session restoration on mount failed:', error)
+            }
+          }
+        }
+      }
+    }
+
+    refreshSession()
+  }, [status, session])
+
+  // Check localStorage for session backup on mount
+  useEffect(() => {
+    const checkStoredSession = async () => {
+      const storedSession = localStorage.getItem('user-session')
+      if (storedSession && status === 'unauthenticated') {
+        const sessionData = JSON.parse(storedSession)
+        const timeDiff = Date.now() - sessionData.timestamp
+        // If session is less than 24 hours old, try to restore session
+        if (timeDiff < 24 * 60 * 60 * 1000) {
+          console.log('Recent session found, attempting to restore session')
+          // Try to refresh the session
+          try {
+            const response = await fetch('/api/auth/session', { method: 'GET' })
+            if (response.ok) {
+              const sessionData = await response.json()
+              if (sessionData?.user) {
+                console.log('Session restored successfully')
+                // Update localStorage with fresh data
+                localStorage.setItem('user-session', JSON.stringify({
+                  userId: sessionData.user.id,
+                  timestamp: Date.now()
+                }))
+                return
+              }
+            }
+          } catch (error) {
+            console.log('Session restoration failed:', error)
+          }
+        } else {
+          // Clear expired session
+          localStorage.removeItem('user-session')
+        }
+      }
+    }
+
+    checkStoredSession()
+  }, [status, router])
+
+  // Handle page visibility changes to refresh session
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (!document.hidden && status === 'authenticated') {
+        // Refresh session when user comes back to the tab
+        try {
+          await fetch('/api/auth/session', { method: 'GET' })
+        } catch (error) {
+          console.log('Session refresh on visibility change failed:', error)
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [status])
+
+
 
   const handleStartSession = () => {
     setIsStartSessionModalOpen(true)
@@ -137,7 +278,7 @@ export default function DashboardPage() {
     setIsRealTimeSessionActive(false)
     setCurrentSessionData(null)
     // Refresh dashboard stats after session ends
-    if (user?.id) {
+    if (session?.user?.id) {
       fetchDashboardStats()
       fetchActivity()
     }
@@ -149,7 +290,7 @@ export default function DashboardPage() {
     alert(`Test "${scheduleData.name}" scheduled for ${new Date(`${scheduleData.date}T${scheduleData.time}`).toLocaleString()}!`)
   }
 
-  if (isLoading) {
+  if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <motion.div
@@ -161,26 +302,37 @@ export default function DashboardPage() {
     )
   }
 
-  if (!user) {
+  // Don't render anything if we don't have a session and we're not loading
+  // But also check if we have a stored session to prevent unnecessary redirects
+  if (!session?.user && status === 'unauthenticated') {
+    const storedSession = localStorage.getItem('user-session')
+    if (storedSession) {
+      const sessionData = JSON.parse(storedSession)
+      const timeDiff = Date.now() - sessionData.timestamp
+      // If we have a recent stored session, show loading instead of redirecting
+      if (timeDiff < 24 * 60 * 60 * 1000) {
+        return (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full"
+            />
+            <div className="ml-4">
+              <p className="text-sm text-gray-600">Restoring session...</p>
+            </div>
+          </div>
+        )
+      }
+    }
     return null
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <Navbar 
-        user={user} 
-        onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      />
-
-      <div className="flex">
-        {/* Sidebar */}
-        <DashboardSidebar user={user} onLogout={handleLogout} />
-
-        {/* Main Content */}
-        <div className="flex-1 lg:ml-72">
-          <main className="py-6 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto">
+    <DashboardLayout>
+      <div>
+        <main className="py-6 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -261,7 +413,7 @@ export default function DashboardPage() {
                       <Button 
                         variant="outline" 
                         className="h-24 w-full flex flex-col items-center justify-center bg-blue-50 border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-colors text-center"
-                        onClick={() => router.push('/dashboard/device')}
+                        onClick={() => router.push('/device')}
                       >
                         <Smartphone className="w-6 h-6 mb-2 text-blue-600" />
                         <span className="text-sm font-medium text-blue-700 text-center">Manage Devices</span>
@@ -269,7 +421,7 @@ export default function DashboardPage() {
                       <Button 
                         variant="outline" 
                         className="h-24 w-full flex flex-col items-center justify-center bg-green-50 border-green-200 hover:bg-green-100 hover:border-green-300 transition-colors text-center"
-                        onClick={() => router.push('/dashboard/reports')}
+                        onClick={() => router.push('/reports')}
                       >
                         <BarChart3 className="w-6 h-6 mb-2 text-green-600" />
                         <span className="text-sm font-medium text-green-700 text-center">View Reports</span>
@@ -438,31 +590,30 @@ export default function DashboardPage() {
                 </Card>
               </motion.div>
             </div>
-            </div>
-          </main>
+          </div>
+        </main>
+
+          {/* Modals */}
+          <StartSessionModal
+            isOpen={isStartSessionModalOpen}
+            onClose={() => setIsStartSessionModalOpen(false)}
+            onStartSession={handleSessionStart}
+          />
+          
+          <ScheduleTestModal
+            isOpen={isScheduleTestModalOpen}
+            onClose={() => setIsScheduleTestModalOpen(false)}
+            onScheduleTest={handleTestSchedule}
+          />
+
+          {/* Real-time Session Overlay */}
+          {isRealTimeSessionActive && currentSessionData && (
+            <RealTimeSession
+              sessionData={currentSessionData}
+              onEndSession={handleEndSession}
+            />
+          )}
         </div>
-      </div>
-
-      {/* Modals */}
-      <StartSessionModal
-        isOpen={isStartSessionModalOpen}
-        onClose={() => setIsStartSessionModalOpen(false)}
-        onStartSession={handleSessionStart}
-      />
-      
-      <ScheduleTestModal
-        isOpen={isScheduleTestModalOpen}
-        onClose={() => setIsScheduleTestModalOpen(false)}
-        onScheduleTest={handleTestSchedule}
-      />
-
-      {/* Real-time Session Overlay */}
-      {isRealTimeSessionActive && currentSessionData && (
-        <RealTimeSession
-          sessionData={currentSessionData}
-          onEndSession={handleEndSession}
-        />
-      )}
-    </div>
+    </DashboardLayout>
   )
 }

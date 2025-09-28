@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/utils'
 import { Button } from '@/components/ui/button'
 import { 
   LayoutDashboard, 
@@ -33,13 +33,13 @@ const navigationItems = [
   },
   {
     name: 'Device',
-    href: '/dashboard/device',
+    href: '/device',
     icon: Smartphone,
     description: 'ESP32 device management'
   },
   {
     name: 'Reports',
-    href: '/dashboard/reports',
+    href: '/reports',
     icon: FileText,
     description: 'Data analysis and exports'
   }

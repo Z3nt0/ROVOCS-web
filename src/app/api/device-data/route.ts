@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '../../../lib/prisma'
+import prisma from '@/lib/database/prisma'
 
 // POST /api/device-data - Receive sensor data from ESP32
 export async function POST(request: NextRequest) {

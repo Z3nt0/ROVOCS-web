@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createUser, validateUser, getUserByEmail } from '@/lib/auth'
+import { createUser, getUserByEmail } from '@/lib/auth/auth'
 import { z } from 'zod'
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-})
-
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
 })
 
 export async function POST(request: NextRequest) {
@@ -34,28 +29,6 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json({
         message: 'User created successfully',
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        },
-      })
-    }
-
-    if (action === 'login') {
-      const { email, password } = loginSchema.parse(body)
-      
-      const user = await validateUser(email, password)
-      
-      if (!user) {
-        return NextResponse.json(
-          { error: 'Invalid email or password' },
-          { status: 401 }
-        )
-      }
-
-      return NextResponse.json({
-        message: 'Login successful',
         user: {
           id: user.id,
           name: user.name,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '../../../../lib/prisma'
+import prisma from '@/lib/database/prisma'
 
 // GET /api/reports/[id] - Get a specific report with detailed analytics
 export async function GET(

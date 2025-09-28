@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -39,29 +40,21 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'login',
-          ...data,
-        }),
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        setError(result.error || 'Login failed')
+      if (result?.error) {
+        setError('Invalid email or password')
         return
       }
 
-      // Store user data in localStorage for now (in production, use proper session management)
-      localStorage.setItem('user', JSON.stringify(result.user))
-      
-      // Redirect to dashboard
-      router.push('/dashboard')
+      if (result?.ok) {
+        // Redirect to dashboard
+        router.push('/dashboard')
+      }
     } catch {
       setError('An unexpected error occurred')
     } finally {

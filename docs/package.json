@@ -1,0 +1,25 @@
+{
+  "name": "mock-esp32-simulator",
+  "version": "1.0.0",
+  "description": "Mock ESP32 device simulator for ROVOCS web application testing",
+  "main": "mock-esp32.js",
+  "scripts": {
+    "start": "node mock-esp32.js",
+    "dev": "node mock-esp32.js"
+  },
+  "keywords": [
+    "esp32",
+    "mock",
+    "simulator",
+    "rovocs",
+    "sensors",
+    "iot"
+  ],
+  "author": "ROVOCS Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+
+

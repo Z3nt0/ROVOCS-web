@@ -616,10 +616,10 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
                     )}
                   </div>
 
-                  {readings.length > 2 && (
+                  {readings.length > 1 && (
                     <div className="mt-4 text-center">
                       <div className="text-xs text-gray-500">
-                        Latest 2 readings of {readings.length} total
+                        Latestreading of {readings.length} total
                       </div>
                     </div>
                   )}

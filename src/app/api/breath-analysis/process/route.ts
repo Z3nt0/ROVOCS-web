@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '../../../../lib/prisma'
-import { BreathAnalyzer, SensorReading } from '../../../../lib/breath-analysis'
+import prisma from '@/lib/database/prisma'
+import { BreathAnalyzer, SensorReading } from '@/lib/analysis/breath-analysis'
 
 // POST /api/breath-analysis/process - Process sensor data for breath analysis
 export async function POST(request: NextRequest) {

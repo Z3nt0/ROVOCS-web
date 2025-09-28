@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { DashboardSidebar } from '@/components/dashboard-sidebar'
-import { Navbar } from '@/components/navbar'
-import { ConnectDeviceModal } from '@/components/connect-device-modal'
+import { DashboardLayout } from '@/components/dashboard/dashboard-layout'
+import { ConnectDeviceModal } from '@/components/device/connect-device-modal'
+import { DeviceSettingsModal } from '@/components/device/device-settings-modal'
+import { DeleteDeviceModal } from '@/components/device/delete-device-modal'
 import { 
   Smartphone, 
   Wifi, 
@@ -51,9 +52,10 @@ interface SensorStatus {
 export default function DevicePage() {
   const [device, setDevice] = useState<Device | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false)
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -66,9 +68,11 @@ export default function DevicePage() {
   }, [router])
 
   const fetchDevice = useCallback(async () => {
+    if (!user?.id) return
+    
     try {
       setIsLoading(true)
-      const response = await fetch(`/api/devices?userId=${user?.id}`)
+      const response = await fetch(`/api/devices?userId=${user.id}`)
       if (response.ok) {
         const data = await response.json()
         if (data.length > 0) {
@@ -106,41 +110,26 @@ export default function DevicePage() {
     if (user?.id) {
       fetchDevice()
     }
-  }, [user, fetchDevice])
+  }, [user?.id, fetchDevice])
 
-  const handleRemoveDevice = async (deviceId: string) => {
-    if (!confirm('Are you sure you want to remove this device? This will delete all associated readings and reports.')) {
-      return
-    }
 
-    try {
-      const response = await fetch(`/api/devices/${deviceId}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        console.log('Device removed successfully:', result.message)
-        setDevice(null) // Clear the device state immediately
-        fetchDevice() // Refresh the device list
-      } else {
-        const error = await response.json()
-        console.error('Failed to remove device:', error)
-        alert(error.error || 'Failed to remove device')
-      }
-    } catch (error) {
-      console.error('Error removing device:', error)
-      alert('Network error. Please check your connection and try again.')
-    }
+  const handleRemoveDevice = () => {
+    setIsDeleteModalOpen(true)
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('user')
-    router.push('/')
+  const handleDeviceDeleted = () => {
+    setDevice(null) // Clear the device state immediately
+    fetchDevice() // Refresh the device list
   }
+
 
   const handleDeviceConnected = () => {
     // Refresh device data when a new device is connected
+    fetchDevice()
+  }
+
+  const handleDeviceUpdated = () => {
+    // Refresh device data when settings are updated
     fetchDevice()
   }
 
@@ -210,26 +199,26 @@ export default function DevicePage() {
     )
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full"
+        />
+      </div>
+    )
+  }
+
   if (!user) {
     return null
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <Navbar 
-        user={user} 
-        onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      />
-
-      <div className="flex">
-        {/* Sidebar */}
-        <DashboardSidebar user={user} onLogout={handleLogout} />
-
-        {/* Main Content */}
-        <div className="flex-1 lg:ml-72">
-          <div className="py-4 px-4 sm:py-6 sm:pl-2 sm:pr-6 lg:pl-2 lg:pr-8">
-          <div className="max-w-7xl mx-auto w-full">
+    <DashboardLayout>
+      <div className="py-4 px-4 sm:py-6 sm:pl-2 sm:pr-6 lg:pl-2 lg:pr-8">
+        <div className="max-w-7xl mx-auto w-full">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -285,12 +274,17 @@ export default function DevicePage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleRemoveDevice(device.id)}
+                          onClick={handleRemoveDevice}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setIsSettingsModalOpen(true)}
+                          className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                        >
                           <Settings className="w-4 h-4" />
                         </Button>
                       </div>
@@ -461,8 +455,6 @@ export default function DevicePage() {
             </motion.div>
           )}
 
-          </div>
-          </div>
         </div>
       </div>
 
@@ -473,6 +465,22 @@ export default function DevicePage() {
         onDeviceConnected={handleDeviceConnected}
         user={user}
       />
-    </div>
+
+      {/* Device Settings Modal */}
+      <DeviceSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        device={device}
+        onDeviceUpdated={handleDeviceUpdated}
+      />
+
+      {/* Delete Device Modal */}
+      <DeleteDeviceModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        device={device}
+        onDeviceDeleted={handleDeviceDeleted}
+      />
+    </DashboardLayout>
   )
 }

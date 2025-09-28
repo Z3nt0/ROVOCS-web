@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils/utils'
 import { Button } from '@/components/ui/button'
 import { 
   LayoutDashboard, 

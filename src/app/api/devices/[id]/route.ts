@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '../../../../lib/prisma'
+import prisma from '@/lib/database/prisma'
 
 // GET /api/devices/[id] - Get a specific device
 export async function GET(
@@ -55,6 +55,36 @@ export async function PUT(
   }
 }
 
+// PATCH /api/devices/[id] - Partially update a device
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const body = await request.json()
+    const { name } = body
+
+    // Build update data object with only provided fields
+    const updateData: { name?: string } = {}
+    if (name !== undefined) updateData.name = name
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+    }
+
+    const device = await prisma.device.update({
+      where: { id },
+      data: updateData
+    })
+
+    return NextResponse.json(device)
+  } catch (error) {
+    console.error('Error updating device:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
 // DELETE /api/devices/[id] - Delete a device
 export async function DELETE(
   request: NextRequest,
@@ -72,16 +102,23 @@ export async function DELETE(
       return NextResponse.json({ error: 'Device not found' }, { status: 404 })
     }
     
-    // Use a transaction to ensure all deletions succeed or fail together
+    // Use a transaction to ensure all operations succeed or fail together
     await prisma.$transaction(async (tx) => {
       // Delete all related readings
       await tx.reading.deleteMany({
         where: { deviceId: id }
       })
       
-      // Delete all related reports
-      await tx.report.deleteMany({
-        where: { deviceId: id }
+      // Update reports to remove device reference instead of deleting them
+      await tx.report.updateMany({
+        where: { deviceId: id },
+        data: { deviceId: null }
+      })
+      
+      // Update breath sessions to remove device reference
+      await tx.breathSession.updateMany({
+        where: { deviceId: id },
+        data: { deviceId: null }
       })
       
       // Finally, delete the device

@@ -12,12 +12,12 @@ import http from 'http';
 // Configuration (matching esp32.ino)
 const CONFIG = {
   // Server Configuration
-  serverUrl: 'http://localhost:3000/api/device-data', // Change to your server URL
-  deviceSerial: 'ESP32-123', // Mock device serial
-  pairingCode: '1TXUDF', // Mock pairing code
+  serverUrl: 'https://rovocs-web.vercel.app/api/device-data', // Change to your server URL
+  deviceSerial: '1234MOCKESP', // Mock device serial
+  pairingCode: 'E94TWA', // Mock pairing code
   
   // Data sending configuration
-  sendInterval: 2000, // Send data every 2 seconds (matching SEND_INTERVAL)
+  sendInterval: 1000, // Send data every 1 second (real-time)
   
   // Sensor simulation parameters
   sensors: {

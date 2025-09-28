@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '../../../../lib/prisma'
+import prisma from '@/lib/database/prisma'
 
 // GET /api/readings/latest - Get the latest reading for a device (for real-time sessions)
 export async function GET(request: NextRequest) {
@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
 
 
 

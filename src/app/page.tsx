@@ -1,5 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -7,6 +10,32 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Activity, BarChart3, Shield } from 'lucide-react'
 
 export default function Home() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    // Check if user is authenticated and redirect to dashboard
+    if (status === 'authenticated' && session?.user) {
+      // Add a small delay to ensure session is fully loaded
+      const timer = setTimeout(() => {
+        router.push('/dashboard')
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [status, session, router])
+
+  // Show loading while checking session or if authenticated (to prevent flash)
+  if (status === 'loading' || status === 'authenticated') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full"
+        />
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       {/* Navigation */}

@@ -15,6 +15,7 @@ import {
   BarChart3,
   FileText
 } from 'lucide-react'
+import { generateReportPDFFromElement } from '@/lib/analysis/pdf-generator'
 
 interface ReportData {
   id: string
@@ -60,6 +61,7 @@ export const ReportViewerModal = ({ isOpen, onClose, reportId }: ReportViewerMod
   const [report, setReport] = useState<ReportData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isDownloading, setIsDownloading] = useState(false)
 
   const fetchReportDetails = useCallback(async () => {
     try {
@@ -88,15 +90,72 @@ export const ReportViewerModal = ({ isOpen, onClose, reportId }: ReportViewerMod
     }
   }, [isOpen, reportId, fetchReportDetails])
 
-  const handleDownload = () => {
-    if (report?.fileUrl) {
-      // Create a temporary link to download the file
-      const link = document.createElement('a')
-      link.href = report.fileUrl
-      link.download = `${report.name || 'Report'}.json`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+  const handleDownload = async () => {
+    if (isDownloading) return
+    
+    try {
+      setIsDownloading(true)
+      console.log('Starting PDF generation...')
+      
+      // Check if the element exists
+      const element = document.getElementById('report-modal-content')
+      if (!element) {
+        throw new Error('Report content element not found')
+      }
+      
+      console.log('Element found, proceeding with PDF generation...')
+      
+      // Generate PDF from the modal content
+      await generateReportPDFFromElement('report-modal-content', report?.name || 'Report')
+      
+      console.log('PDF generated successfully')
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      
+      // Try alternative PDF generation method
+      try {
+        console.log('Trying alternative PDF generation...')
+        
+        // Create a simple text-based report as fallback
+        const reportText = `
+ROVOCS Respiratory Health Report
+${report?.name || 'Report'}
+
+Session Information:
+- Device: ${report?.device?.name || 'Device Removed'}
+- Start Time: ${report?.from ? new Date(report.from).toLocaleString() : 'N/A'}
+- End Time: ${report?.to ? new Date(report.to).toLocaleString() : 'N/A'}
+- Duration: ${report?.from && report?.to ? formatDuration(report.from, report.to) : 'N/A'}
+- Total Readings: ${report?.readingsCount || 0}
+
+Summary Statistics:
+- Average TVOC: ${report?.analytics?.avgTVOC?.toFixed(1) || 'N/A'} ppb
+- Average eCO₂: ${report?.analytics?.avgECO2?.toFixed(1) || 'N/A'} ppm
+- Average Temperature: ${report?.analytics?.avgTemperature?.toFixed(1) || 'N/A'}°C
+- Average Humidity: ${report?.analytics?.avgHumidity?.toFixed(1) || 'N/A'}%
+
+Generated on: ${new Date().toLocaleString()}
+        `.trim()
+        
+        // Create and download text file as fallback
+        const blob = new Blob([reportText], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `ROVOCS_Report_${(report?.name || 'Report').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+        
+        console.log('Fallback text report generated')
+        alert('PDF generation failed, but a text report has been downloaded instead.')
+      } catch (fallbackError) {
+        console.error('Fallback PDF generation also failed:', fallbackError)
+        alert('Failed to generate report. Please try again or contact support if the issue persists.')
+      }
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -200,6 +259,7 @@ export const ReportViewerModal = ({ isOpen, onClose, reportId }: ReportViewerMod
       size="xl"
     >
       <div 
+        id="report-modal-content"
         className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar touch-pan-y"
         style={{
           scrollbarWidth: 'thin',
@@ -209,16 +269,30 @@ export const ReportViewerModal = ({ isOpen, onClose, reportId }: ReportViewerMod
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 space-y-2 sm:space-y-0">
           <div>
             <p className="text-sm sm:text-base text-gray-600">
-              {report?.device?.name || 'Device'} • {report?.readingsCount || 0} readings
+              {report?.device?.name || 'Device Removed'} • {report?.readingsCount || 0} readings
             </p>
           </div>
           <div className="flex items-center space-x-2">
             <Button
               onClick={handleDownload}
-              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
+              disabled={isDownloading}
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Download className="w-4 h-4 mr-2" />
-              Download
+              {isDownloading ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full"
+                  />
+                  Generating PDF...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download PDF
+                </>
+              )}
             </Button>
           </div>
         </div>

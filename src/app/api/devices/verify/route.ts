@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '../../../../lib/prisma'
+import prisma from '@/lib/database/prisma'
 
 // GET /api/devices/verify - Verify device pairing
 export async function GET(request: NextRequest) {
@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
 
 
 
