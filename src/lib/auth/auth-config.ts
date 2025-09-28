@@ -2,6 +2,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { validateUser } from './auth'
 
 export const authOptions = {
+  adapter: undefined, // Use JWT strategy instead of database adapter
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -116,10 +117,15 @@ export const authOptions = {
   pages: {
     signIn: '/auth/login',
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
   debug: process.env.NODE_ENV === 'development',
   trustHost: true, // Required for Vercel
   useSecureCookies: process.env.NODE_ENV === 'production',
+  
+  // Add environment validation
+  ...(process.env.NEXTAUTH_URL && { 
+    url: process.env.NEXTAUTH_URL 
+  }),
   logger: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error(code: any, metadata?: any) {
