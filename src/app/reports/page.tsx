@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -52,6 +53,7 @@ interface Report {
 }
 
 export default function ReportsPage() {
+  const { data: session, status } = useSession()
   const [reports, setReports] = useState<Report[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
@@ -67,14 +69,25 @@ export default function ReportsPage() {
     return Math.round(reports.reduce((sum, report) => sum + getValue(report), 0) / reports.length)
   }
 
+  // Authentication check
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      setUser(JSON.parse(userData))
-    } else {
-      router.push('/auth/login')
+    if (status === 'loading') {
+      setIsLoading(true)
+    } else if (status === 'unauthenticated') {
+      router.replace('/auth/login')
+    } else if (status === 'authenticated') {
+      setIsLoading(false)
+      // Set user from session
+      if (session?.user) {
+        setUser({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          id: (session.user as any).id || '',
+          name: session.user.name || '',
+          email: session.user.email || ''
+        })
+      }
     }
-  }, [router])
+  }, [status, session, router])
 
   const fetchReports = useCallback(async () => {
     try {

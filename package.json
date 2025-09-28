@@ -7,7 +7,14 @@
     "build": "prisma generate && next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test:auth": "node scripts/test-production-auth.js",
+    "test:auth:simple": "node scripts/test-auth-flow.js",
+    "test:redirects": "node scripts/test-page-redirects.js",
+    "test:final": "node scripts/test-final-auth.js",
+    "test:debug": "node scripts/debug-login.js",
+    "test:user": "node scripts/create-user.js",
+    "test:all": "npm run test:auth && npm run test:redirects && npm run test:final"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
