@@ -45,23 +45,36 @@ export async function getUserByEmail(email: string) {
 }
 
 export async function validateUser(email: string, password: string): Promise<User | null> {
-  const user = await getUserByEmail(email)
-  
-  if (!user) {
-    return null
-  }
+  try {
+    console.log('Validating user with email:', email)
+    
+    const user = await getUserByEmail(email)
+    console.log('User found:', !!user)
+    
+    if (!user) {
+      console.log('User not found in database')
+      return null
+    }
 
-  const isValid = await verifyPassword(password, user.passwordHash)
-  
-  if (!isValid) {
-    return null
-  }
+    console.log('Verifying password...')
+    const isValid = await verifyPassword(password, user.passwordHash)
+    console.log('Password valid:', isValid)
+    
+    if (!isValid) {
+      console.log('Invalid password')
+      return null
+    }
 
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
+    console.log('User validation successful')
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    }
+  } catch (error) {
+    console.error('Error in validateUser:', error)
+    return null
   }
 }

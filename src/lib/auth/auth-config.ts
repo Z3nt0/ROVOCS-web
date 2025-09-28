@@ -11,13 +11,16 @@ export const authOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log('Missing credentials')
           return null
         }
 
         try {
+          console.log('Attempting to validate user:', credentials.email)
           const user = await validateUser(credentials.email, credentials.password)
           
           if (user) {
+            console.log('User validated successfully:', user.email)
             return {
               id: user.id,
               name: user.name,
@@ -25,6 +28,7 @@ export const authOptions = {
             }
           }
           
+          console.log('User validation failed')
           return null
         } catch (error) {
           console.error('Auth error:', error)
@@ -56,11 +60,23 @@ export const authOptions = {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async redirect({ url, baseUrl }: any) {
+      console.log('NextAuth redirect called with:', { url, baseUrl })
+      
       // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
+      if (url.startsWith("/")) {
+        const redirectUrl = `${baseUrl}${url}`
+        console.log('Redirecting to relative URL:', redirectUrl)
+        return redirectUrl
+      }
       // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return `${baseUrl}/dashboard`
+      else if (new URL(url).origin === baseUrl) {
+        console.log('Redirecting to same origin URL:', url)
+        return url
+      }
+      
+      const defaultRedirect = `${baseUrl}/dashboard`
+      console.log('Redirecting to default:', defaultRedirect)
+      return defaultRedirect
     },
   },
   jwt: {
@@ -101,4 +117,21 @@ export const authOptions = {
     signIn: '/auth/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
+  trustHost: true, // Required for Vercel
+  useSecureCookies: process.env.NODE_ENV === 'production',
+  logger: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error(code: any, metadata?: any) {
+      console.error('NextAuth Error:', code, metadata)
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    warn(code: any) {
+      console.warn('NextAuth Warning:', code)
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    debug(code: any, metadata?: any) {
+      console.log('NextAuth Debug:', code, metadata)
+    }
+  }
 }
