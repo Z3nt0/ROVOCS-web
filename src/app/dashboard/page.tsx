@@ -105,36 +105,8 @@ export default function DashboardPage() {
     if (status === 'loading') {
       setIsLoading(true)
     } else if (status === 'unauthenticated') {
-      // Check if we have a stored session first
-      const storedSession = localStorage.getItem('user-session')
-      if (storedSession) {
-        const sessionData = JSON.parse(storedSession)
-        const timeDiff = Date.now() - sessionData.timestamp
-        // If session is less than 24 hours old, don't redirect at all
-        if (timeDiff < 24 * 60 * 60 * 1000) {
-          console.log('Recent session found, staying on dashboard')
-          // Try to restore session immediately
-          fetch('/api/auth/session', { method: 'GET' })
-            .then(response => response.json())
-            .then(data => {
-              if (data?.user) {
-                console.log('Session restored successfully')
-                localStorage.setItem('user-session', JSON.stringify({
-                  userId: data.user.id,
-                  timestamp: Date.now()
-                }))
-              }
-            })
-            .catch(error => console.log('Session restoration failed:', error))
-          return
-        }
-      }
-      
-      // Only redirect if no valid stored session
-      const timer = setTimeout(() => {
-        router.push('/auth/login')
-      }, 3000) // Increased delay to 3 seconds
-      return () => clearTimeout(timer)
+      // Redirect immediately to login if not authenticated
+      router.replace('/auth/login')
     } else if (status === 'authenticated') {
       setIsLoading(false)
     }

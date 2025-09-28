@@ -53,6 +53,14 @@ export const authOptions = {
       }
       return session
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async redirect({ url, baseUrl }: any) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      return `${baseUrl}/dashboard`
+    },
   },
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 days

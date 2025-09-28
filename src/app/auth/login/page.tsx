@@ -53,7 +53,7 @@ export default function LoginPage() {
 
       if (result?.ok) {
         // Redirect to dashboard
-        router.push('/dashboard')
+        router.replace('/dashboard')
       }
     } catch {
       setError('An unexpected error occurred')
