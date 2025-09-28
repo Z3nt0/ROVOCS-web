@@ -146,3 +146,4 @@ export const AnalyticsChart = ({ title, data, type = 'bar' }: AnalyticsChartProp
 
 
 
+
