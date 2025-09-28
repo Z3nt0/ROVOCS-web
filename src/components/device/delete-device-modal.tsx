@@ -65,7 +65,7 @@ export function DeleteDeviceModal({ isOpen, onClose, device, onDeviceDeleted }: 
       setDeleteStatus('error')
       setTimeout(() => setDeleteStatus('idle'), 3000)
     } finally {
-      setIsDeleting(false)
+      setDeleteStatus('idle')
     }
   }
 

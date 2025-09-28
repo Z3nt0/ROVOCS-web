@@ -67,7 +67,10 @@ export default function DashboardPage() {
   const fetchDashboardStats = useCallback(async () => {
     try {
       setStatsLoading(true)
-      const response = await fetch(`/api/dashboard/stats?userId=${session?.user?.id}`)
+      const userId = (session?.user as { id?: string })?.id
+      if (!userId) return
+      
+      const response = await fetch(`/api/dashboard/stats?userId=${userId}`)
       if (response.ok) {
         const data = await response.json()
         setStats(data)
@@ -77,12 +80,15 @@ export default function DashboardPage() {
     } finally {
       setStatsLoading(false)
     }
-  }, [session?.user?.id])
+  }, [session?.user])
 
   const fetchActivity = useCallback(async () => {
     try {
       setActivityLoading(true)
-      const response = await fetch(`/api/activity?userId=${session?.user?.id}&limit=10`)
+      const userId = (session?.user as { id?: string })?.id
+      if (!userId) return
+      
+      const response = await fetch(`/api/activity?userId=${userId}&limit=10`)
       if (response.ok) {
         const data = await response.json()
         setActivity(data)
@@ -92,7 +98,7 @@ export default function DashboardPage() {
     } finally {
       setActivityLoading(false)
     }
-  }, [session?.user?.id])
+  }, [session?.user])
 
 
   useEffect(() => {
@@ -135,11 +141,12 @@ export default function DashboardPage() {
   }, [status, router])
 
   useEffect(() => {
-    if (session?.user?.id) {
+    const userId = (session?.user as { id?: string })?.id
+    if (userId) {
       fetchDashboardStats()
       fetchActivity()
     }
-  }, [session?.user?.id, fetchDashboardStats, fetchActivity])
+  }, [session?.user, fetchDashboardStats, fetchActivity])
 
   // Add session refresh mechanism
   useEffect(() => {
@@ -147,7 +154,7 @@ export default function DashboardPage() {
       if (status === 'authenticated' && session?.user) {
         // Store session info in localStorage as backup
         localStorage.setItem('user-session', JSON.stringify({
-          userId: session.user.id,
+          userId: (session.user as { id?: string }).id,
           timestamp: Date.now()
         }))
 
@@ -160,7 +167,7 @@ export default function DashboardPage() {
               if (sessionData?.user) {
                 // Update localStorage with fresh session data
                 localStorage.setItem('user-session', JSON.stringify({
-                  userId: sessionData.user.id,
+                  userId: (sessionData.user as { id?: string }).id,
                   timestamp: Date.now()
                 }))
               }
@@ -221,7 +228,7 @@ export default function DashboardPage() {
                 console.log('Session restored successfully')
                 // Update localStorage with fresh data
                 localStorage.setItem('user-session', JSON.stringify({
-                  userId: sessionData.user.id,
+                  userId: (sessionData.user as { id?: string }).id,
                   timestamp: Date.now()
                 }))
                 return
@@ -278,7 +285,8 @@ export default function DashboardPage() {
     setIsRealTimeSessionActive(false)
     setCurrentSessionData(null)
     // Refresh dashboard stats after session ends
-    if (session?.user?.id) {
+    const userId = (session?.user as { id?: string })?.id
+    if (userId) {
       fetchDashboardStats()
       fetchActivity()
     }

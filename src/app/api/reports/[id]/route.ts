@@ -26,7 +26,7 @@ export async function GET(
     }
 
     // Get readings for this report's time period
-    const readings = await prisma.reading.findMany({
+    const readings = report.deviceId ? await prisma.reading.findMany({
       where: {
         deviceId: report.deviceId,
         recordedAt: {
@@ -36,7 +36,7 @@ export async function GET(
       },
       orderBy: { recordedAt: 'desc' },
       take: 100 // Limit to last 100 readings for performance
-    })
+    }) : []
 
     // Calculate analytics
     const analytics = {

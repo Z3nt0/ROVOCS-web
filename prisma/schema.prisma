@@ -60,8 +60,8 @@ model Report {
   id         String   @id @default(cuid())
   user       User     @relation(fields: [userId], references: [id])
   userId     String
-  device     Device   @relation(fields: [deviceId], references: [id])
-  deviceId   String
+  device     Device?  @relation(fields: [deviceId], references: [id])
+  deviceId   String?
   from       DateTime
   to         DateTime
   fileUrl    String   // Storage path (S3/Cloud)
@@ -72,8 +72,8 @@ model BreathSession {
   id          String   @id @default(cuid())
   user        User     @relation(fields: [userId], references: [id])
   userId      String
-  device      Device   @relation(fields: [deviceId], references: [id])
-  deviceId    String
+  device      Device?  @relation(fields: [deviceId], references: [id])
+  deviceId    String?
   name        String
   startTime   DateTime
   endTime     DateTime?
