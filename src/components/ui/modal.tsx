@@ -24,7 +24,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4" style={{ zIndex: 9999 }}>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -56,7 +56,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             </div>
             
             {/* Content */}
-            <div className="p-4 sm:p-6 flex-1 overflow-hidden">
+            <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
               {children}
             </div>
           </motion.div>

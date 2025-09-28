@@ -169,7 +169,7 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
       title="Connect ESP32 Device"
       size="xl"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 min-h-0 lg:items-stretch">
           {/* Connection Steps */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -177,7 +177,7 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
             transition={{ delay: 0.1, duration: 0.5 }}
             className="h-full"
           >
-            <Card className="h-full">
+            <Card className="h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Smartphone className="w-5 h-5 mr-2 text-green-600" />
@@ -187,51 +187,51 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                   Follow these steps to connect your ESP32 device
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 flex-1">
-                <div className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4 flex-1">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-medium text-green-600">1</span>
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm font-medium text-green-600">1</span>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">Upload Firmware</h4>
-                      <p className="text-sm text-gray-600">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 text-sm sm:text-base">Upload Firmware</h4>
+                      <p className="text-xs sm:text-sm text-gray-600">
                         Upload the ROVOCS firmware to your ESP32 device
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-medium text-green-600">2</span>
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm font-medium text-green-600">2</span>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">Configure Wi-Fi</h4>
-                      <p className="text-sm text-gray-600">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 text-sm sm:text-base">Configure Wi-Fi</h4>
+                      <p className="text-xs sm:text-sm text-gray-600">
                         Set up Wi-Fi credentials in the device configuration
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-medium text-green-600">3</span>
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm font-medium text-green-600">3</span>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">Enter Pairing Code</h4>
-                      <p className="text-sm text-gray-600">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 text-sm sm:text-base">Enter Pairing Code</h4>
+                      <p className="text-xs sm:text-sm text-gray-600">
                         Use the pairing code below to authenticate the device
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-medium text-green-600">4</span>
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs sm:text-sm font-medium text-green-600">4</span>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">Test Connection</h4>
-                      <p className="text-sm text-gray-600">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-gray-900 text-sm sm:text-base">Test Connection</h4>
+                      <p className="text-xs sm:text-sm text-gray-600">
                         Verify the device is sending data to your account
                       </p>
                     </div>
@@ -248,14 +248,14 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
             transition={{ delay: 0.2, duration: 0.5 }}
             className="h-full"
           >
-            <Card className="h-full">
+            <Card className="h-full flex flex-col">
               <CardHeader>
                 <CardTitle>Device Information</CardTitle>
                 <CardDescription>
                   Enter your device details to complete the pairing
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6 flex-1">
+              <CardContent className="space-y-4 sm:space-y-6 flex-1">
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
@@ -277,7 +277,7 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                     placeholder="e.g., ROVOCS-001"
                     value={deviceName}
                     onChange={(e) => setDeviceName(e.target.value)}
-                    className="mt-1 w-full border-gray-200 focus:border-green-500 focus:ring-green-500"
+                    className="mt-1 w-full border-gray-200 focus:border-green-500 focus:ring-green-500 text-sm sm:text-base"
                   />
                 </div>
 
@@ -291,26 +291,26 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                     placeholder="e.g., ESP32-001"
                     value={deviceSerial}
                     onChange={(e) => setDeviceSerial(e.target.value)}
-                    className="mt-1 w-full border-gray-200 focus:border-green-500 focus:ring-green-500"
+                    className="mt-1 w-full border-gray-200 focus:border-green-500 focus:ring-green-500 text-sm sm:text-base"
                   />
                 </div>
 
                 {/* Pairing Code Display */}
-                <div className="p-4 bg-green-50 border border-green-200 rounded-md w-full">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-md w-full">
+                  <div className="flex flex-col gap-3">
                     <div className="flex-1">
                       <h4 className="text-sm font-medium text-green-800">Pairing Code</h4>
-                      <p className="text-sm text-green-700">Enter this code in your ESP32 device</p>
+                      <p className="text-xs sm:text-sm text-green-700">Enter this code in your ESP32 device</p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <code className="text-lg font-mono font-bold text-green-800 bg-green-100 px-3 py-1 rounded">
+                    <div className="flex items-center justify-between gap-2">
+                      <code className="text-base sm:text-lg font-mono font-bold text-green-800 bg-green-100 px-2 sm:px-3 py-1 rounded flex-1 text-center">
                         {pairingCode}
                       </code>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={copyPairingCode}
-                        className="text-green-600 border-green-300 hover:bg-green-50"
+                        className="text-green-600 border-green-300 hover:bg-green-50 flex-shrink-0"
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
@@ -318,10 +318,17 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                   </div>
                 </div>
 
+                {(!deviceName || !deviceSerial) && (
+                  <div className="text-xs text-amber-600 mb-2 text-center">
+                    Please fill in both device name and serial number to continue
+                  </div>
+                )}
+                
                 <Button
                   onClick={handleConnectDevice}
                   disabled={isConnecting || !deviceName || !deviceSerial}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base py-2 sm:py-2.5 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  style={{ minHeight: '44px' }}
                 >
                   {connectionStatus === 'connecting' ? (
                     <div className="flex items-center space-x-2">
@@ -357,12 +364,12 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                 </Button>
 
                 {connectionStatus === 'verifying' && (
-                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg w-full">
+                  <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg w-full">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Wifi className="w-5 h-5 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-800">Verifying Device Connection</span>
+                      <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                      <span className="text-xs sm:text-sm font-medium text-blue-800">Verifying Device Connection</span>
                     </div>
-                    <p className="text-sm text-blue-700 mb-3">
+                    <p className="text-xs sm:text-sm text-blue-700 mb-3">
                       Make sure your ESP32 is powered on and has the correct pairing code: <strong>{pairingCode}</strong>
                     </p>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -373,7 +380,7 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                         variant="outline"
                         size="sm"
                         onClick={cancelVerification}
-                        className="text-blue-600 border-blue-300 hover:bg-blue-100 w-full sm:w-auto"
+                        className="text-blue-600 border-blue-300 hover:bg-blue-100 w-full sm:w-auto text-xs sm:text-sm"
                       >
                         Cancel
                       </Button>
@@ -390,32 +397,32 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-6 lg:mt-8"
+          className="mt-4 sm:mt-6 lg:mt-8"
         >
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <QrCode className="w-5 h-5 mr-2 text-blue-600" />
+            <CardHeader className="pb-3 sm:pb-6">
+              <CardTitle className="flex items-center text-sm sm:text-base">
+                <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" />
                 ESP32 Configuration
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Configure your ESP32 device with these settings
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
                 <div className="w-full">
-                  <h4 className="font-medium text-gray-900 mb-2">Wi-Fi Settings</h4>
-                  <div className="space-y-2 text-sm text-gray-600">
+                  <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Wi-Fi Settings</h4>
+                  <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                     <p><strong>SSID:</strong> Your Wi-Fi network name</p>
                     <p><strong>Password:</strong> Your Wi-Fi password</p>
-                    <p><strong>Server URL:</strong> <code className="bg-gray-100 px-1 rounded">http://your-domain.com</code></p>
+                    <p><strong>Server URL:</strong> <code className="bg-gray-100 px-1 rounded text-xs">http://your-domain.com</code></p>
                   </div>
                 </div>
                 <div className="w-full">
-                  <h4 className="font-medium text-gray-900 mb-2">Device Settings</h4>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p><strong>Pairing Code:</strong> <code className="bg-green-100 px-1 rounded">{pairingCode}</code></p>
+                  <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Device Settings</h4>
+                  <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
+                    <p><strong>Pairing Code:</strong> <code className="bg-green-100 px-1 rounded text-xs">{pairingCode}</code></p>
                     <p><strong>Update Interval:</strong> 2 seconds</p>
                     <p><strong>Sensor Calibration:</strong> Auto</p>
                   </div>
