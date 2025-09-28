@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -50,6 +51,7 @@ interface SensorStatus {
 }
 
 export default function DevicePage() {
+  const { data: session, status } = useSession()
   const [device, setDevice] = useState<Device | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false)
@@ -58,14 +60,25 @@ export default function DevicePage() {
   const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
   const router = useRouter()
 
+  // Authentication check
   useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      setUser(JSON.parse(userData))
-    } else {
-      router.push('/auth/login')
+    if (status === 'loading') {
+      setIsLoading(true)
+    } else if (status === 'unauthenticated') {
+      router.replace('/auth/login')
+    } else if (status === 'authenticated') {
+      setIsLoading(false)
+      // Set user from session
+      if (session?.user) {
+        setUser({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          id: (session.user as any).id || '',
+          name: session.user.name || '',
+          email: session.user.email || ''
+        })
+      }
     }
-  }, [router])
+  }, [status, session, router])
 
   const fetchDevice = useCallback(async () => {
     if (!user?.id) return

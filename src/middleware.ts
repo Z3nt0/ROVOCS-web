@@ -21,10 +21,16 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    // Protect all dashboard and app pages
     '/dashboard/:path*',
+    '/device/:path*',
+    '/reports/:path*',
+    // Protect API routes that require authentication
     '/api/dashboard/:path*',
     '/api/devices/:path*',
     '/api/reports/:path*',
-    '/api/breath-analysis/:path*'
+    '/api/breath-analysis/:path*',
+    '/api/readings/:path*',
+    '/api/activity/:path*'
   ]
 }

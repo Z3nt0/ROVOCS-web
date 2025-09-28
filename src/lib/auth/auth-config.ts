@@ -29,7 +29,7 @@ export const authOptions = {
             }
           }
           
-          console.log('User validation failed')
+          console.log('User validation failed - user not found or invalid password')
           return null
         } catch (error) {
           console.error('Auth error:', error)
@@ -87,6 +87,13 @@ export const authOptions = {
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  pages: {
+    signIn: '/auth/login',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
+  trustHost: true, // Required for Vercel
+  useSecureCookies: process.env.NODE_ENV === 'production',
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
@@ -118,13 +125,6 @@ export const authOptions = {
       }
     }
   },
-  pages: {
-    signIn: '/auth/login',
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
-  trustHost: true, // Required for Vercel
-  useSecureCookies: process.env.NODE_ENV === 'production',
   logger: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error(code: any, metadata?: any) {
