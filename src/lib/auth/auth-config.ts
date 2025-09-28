@@ -33,6 +33,10 @@ export const authOptions = {
           return null
         } catch (error) {
           console.error('Auth error:', error)
+          console.error('Error details:', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined
+          })
           return null
         }
       }
@@ -117,15 +121,10 @@ export const authOptions = {
   pages: {
     signIn: '/auth/login',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
+  secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
   trustHost: true, // Required for Vercel
   useSecureCookies: process.env.NODE_ENV === 'production',
-  
-  // Add environment validation
-  ...(process.env.NEXTAUTH_URL && { 
-    url: process.env.NEXTAUTH_URL 
-  }),
   logger: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     error(code: any, metadata?: any) {
