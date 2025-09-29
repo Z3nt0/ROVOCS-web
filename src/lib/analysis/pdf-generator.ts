@@ -79,56 +79,50 @@ export const generateReportPDF = async (report: ReportData): Promise<void> => {
     yPosition += 8
   }
 
-  // Helper function to add a compact colored box
-  const addColoredBox = (text: string, color: string, backgroundColor: string) => {
-    const textWidth = pdf.getTextWidth(text)
-    const boxWidth = textWidth + 15
-    const boxHeight = 8
-    
-    // Add background
-    pdf.setFillColor(backgroundColor)
-    pdf.rect(20, yPosition - 5, boxWidth, boxHeight, 'F')
-    
-    // Add border
-    pdf.setDrawColor(color)
-    pdf.rect(20, yPosition - 5, boxWidth, boxHeight, 'S')
-    
-    // Add text
-    pdf.setFontSize(9)
-    pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(color)
-    pdf.text(text, 27, yPosition + 1)
-    
-    yPosition += 10
-  }
 
-  // Compact Header
+  // Enhanced Header with gradient effect
   pdf.setFillColor(16, 185, 129) // Green color
-  pdf.rect(0, 0, pageWidth, 35, 'F')
+  pdf.rect(0, 0, pageWidth, 40, 'F')
   
-  // Add logo area (placeholder for future logo)
+  // Add subtle gradient effect
+  pdf.setFillColor(20, 200, 140)
+  pdf.rect(0, 0, pageWidth, 5, 'F')
+  
+  // Enhanced logo area with better styling
   pdf.setFillColor(255, 255, 255)
-  pdf.circle(25, 18, 6, 'F')
+  pdf.circle(30, 20, 8, 'F')
+  pdf.setDrawColor(16, 185, 129)
+  pdf.circle(30, 20, 8, 'S')
+  
+  // Add a small "R" inside the circle
+  pdf.setFontSize(12)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setTextColor(16, 185, 129)
+  pdf.text('R', 26, 24)
   
   pdf.setTextColor(255, 255, 255)
-  pdf.setFontSize(20)
+  pdf.setFontSize(24)
   pdf.setFont('helvetica', 'bold')
-  pdf.text('ROVOCS', 40, 22)
+  pdf.text('ROVOCS', 50, 25)
   
-  pdf.setFontSize(10)
+  pdf.setFontSize(12)
   pdf.setFont('helvetica', 'normal')
-  pdf.text('Respiratory Health Report', 40, 30)
+  pdf.text('Advanced Respiratory Health Analysis', 50, 33)
   
   yPosition = 45
 
-  // Compact Report Title
-  pdf.setFillColor(249, 250, 251)
-  pdf.rect(15, yPosition - 5, pageWidth - 30, 12, 'F')
-  pdf.setDrawColor(229, 231, 235)
-  pdf.rect(15, yPosition - 5, pageWidth - 30, 12, 'S')
+  // Enhanced Report Title with better styling
+  pdf.setFillColor(248, 250, 252)
+  pdf.rect(15, yPosition - 8, pageWidth - 30, 18, 'F')
+  pdf.setDrawColor(203, 213, 225)
+  pdf.rect(15, yPosition - 8, pageWidth - 30, 18, 'S')
   
-  addText(report.title, 14, true, '#1f2937', 20)
-  yPosition += 8
+  // Add a subtle left border accent
+  pdf.setFillColor(16, 185, 129)
+  pdf.rect(15, yPosition - 8, 4, 18, 'F')
+  
+  addText(report.title, 16, true, '#1e293b', 25)
+  yPosition += 12
   addLine()
 
   // Compact Report Information
@@ -154,146 +148,247 @@ export const generateReportPDF = async (report: ReportData): Promise<void> => {
   
   addLine()
 
-  // Compact Summary Statistics
+  // Enhanced Summary Statistics with better visual design
   addSectionHeader('Summary Statistics')
   
-  // Create a compact 4-column layout for stats
+  // Create enhanced stats with better visual hierarchy
   const stats = [
-    { label: 'TVOC', value: `${report.summary.avgTVOC.toFixed(1)} ppb`, color: '#3b82f6' },
-    { label: 'eCO₂', value: `${report.summary.avgECO2.toFixed(1)} ppm`, color: '#10b981' },
-    { label: 'Temp', value: `${report.summary.avgTemperature.toFixed(1)}°C`, color: '#f59e0b' },
-    { label: 'Humidity', value: `${report.summary.avgHumidity.toFixed(1)}%`, color: '#8b5cf6' }
+    { 
+      label: 'TVOC', 
+      value: `${report.summary.avgTVOC.toFixed(1)} ppb`, 
+      color: '#3b82f6',
+      bgColor: '#eff6ff',
+      borderColor: '#3b82f6',
+      icon: '📊'
+    },
+    { 
+      label: 'eCO₂', 
+      value: `${report.summary.avgECO2.toFixed(1)} ppm`, 
+      color: '#10b981',
+      bgColor: '#ecfdf5',
+      borderColor: '#10b981',
+      icon: '🌱'
+    },
+    { 
+      label: 'Temperature', 
+      value: `${report.summary.avgTemperature.toFixed(1)}°C`, 
+      color: '#f59e0b',
+      bgColor: '#fffbeb',
+      borderColor: '#f59e0b',
+      icon: '🌡️'
+    },
+    { 
+      label: 'Humidity', 
+      value: `${report.summary.avgHumidity.toFixed(1)}%`, 
+      color: '#8b5cf6',
+      bgColor: '#f3e8ff',
+      borderColor: '#8b5cf6',
+      icon: '💧'
+    }
   ]
   
-  // Create compact 4-column grid for stats
+  // Create enhanced 4-column grid for stats
   const gridStartY = yPosition
-  const boxWidth = 40
-  const boxHeight = 15
-  const spacing = 5
+  const boxWidth = 42
+  const boxHeight = 18
+  const spacing = 6
   
   stats.forEach((stat, index) => {
     const x = 20 + index * (boxWidth + spacing)
     const y = gridStartY
     
-    // Add colored background
-    pdf.setFillColor(249, 250, 251)
+    // Add enhanced background with subtle shadow effect
+    pdf.setFillColor(stat.bgColor)
     pdf.rect(x, y, boxWidth, boxHeight, 'F')
     
-    // Add border
-    pdf.setDrawColor(229, 231, 235)
+    // Add colored border
+    pdf.setDrawColor(stat.borderColor)
+    pdf.setLineWidth(0.5)
     pdf.rect(x, y, boxWidth, boxHeight, 'S')
     
-    // Add label
+    // Add subtle inner border
+    pdf.setDrawColor(255, 255, 255)
+    pdf.setLineWidth(0.3)
+    pdf.rect(x + 1, y + 1, boxWidth - 2, boxHeight - 2, 'S')
+    
+    // Add icon (using text as icon placeholder)
     pdf.setFontSize(8)
     pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(107, 114, 128)
-    pdf.text(stat.label, x + 3, y + 6)
+    pdf.setTextColor(stat.color)
+    pdf.text(stat.icon, x + 3, y + 6)
     
-    // Add value with color
-    pdf.setFontSize(10)
+    // Add label
+    pdf.setFontSize(7)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setTextColor(107, 114, 128)
+    pdf.text(stat.label, x + 8, y + 6)
+    
+    // Add value with enhanced styling
+    pdf.setFontSize(11)
     pdf.setFont('helvetica', 'bold')
     pdf.setTextColor(stat.color)
-    pdf.text(stat.value, x + 3, y + 12)
+    pdf.text(stat.value, x + 3, y + 14)
   })
   
-  yPosition = gridStartY + 20
+  yPosition = gridStartY + 22
   addLine()
 
-  // Compact Breath Analysis (if available)
+  // Enhanced Breath Analysis with better visual design
   if (report.breathAnalysis) {
     addSectionHeader('Breath Analysis')
     
-    // Calculate breath quality assessment
+    // Calculate breath quality assessment with enhanced logic
     const avgPeakPercent = report.breathAnalysis.avgPeakPercent
     const avgRecoveryTime = report.breathAnalysis.avgRecoveryTime
+    const completionRate = (report.breathAnalysis.completedEvents / report.breathAnalysis.totalEvents) * 100
     
-    let quality = 'excellent'
     let qualityColor = '#10b981'
     let qualityText = 'Excellent'
+    let qualityBg = '#dcfce7'
+    let qualityIcon = '✅'
     
-    if (avgPeakPercent < 10 || avgRecoveryTime > 30) {
-      quality = 'poor'
+    if (avgPeakPercent < 10 || avgRecoveryTime > 30 || completionRate < 50) {
       qualityColor = '#ef4444'
       qualityText = 'Poor'
-    } else if (avgPeakPercent < 25 || avgRecoveryTime > 20) {
-      quality = 'fair'
+      qualityBg = '#fee2e2'
+      qualityIcon = '❌'
+    } else if (avgPeakPercent < 25 || avgRecoveryTime > 20 || completionRate < 80) {
       qualityColor = '#f59e0b'
       qualityText = 'Fair'
+      qualityBg = '#fef3c7'
+      qualityIcon = '⚠️'
     }
     
-    // Add quality indicator
-    addColoredBox(`Quality: ${qualityText}`, qualityColor, quality === 'excellent' ? '#dcfce7' : quality === 'fair' ? '#fef3c7' : '#fee2e2')
+    // Enhanced quality indicator with better styling
+    const qualityBoxWidth = 80
+    const qualityBoxHeight = 12
     
-    // Create compact breath analysis metrics
+    pdf.setFillColor(qualityBg)
+    pdf.rect(20, yPosition - 6, qualityBoxWidth, qualityBoxHeight, 'F')
+    
+    pdf.setDrawColor(qualityColor)
+    pdf.setLineWidth(0.5)
+    pdf.rect(20, yPosition - 6, qualityBoxWidth, qualityBoxHeight, 'S')
+    
+    pdf.setFontSize(9)
+    pdf.setFont('helvetica', 'bold')
+    pdf.setTextColor(qualityColor)
+    pdf.text(`${qualityIcon} Quality: ${qualityText}`, 25, yPosition + 1)
+    
+    yPosition += 10
+    
+    // Create enhanced breath analysis metrics with better visual hierarchy
     const breathMetrics = [
-      { label: 'Events', value: `${report.breathAnalysis.completedEvents}/${report.breathAnalysis.totalEvents}` },
-      { label: 'Peak %', value: `${report.breathAnalysis.avgPeakPercent.toFixed(1)}%` },
-      { label: 'Recovery', value: `${report.breathAnalysis.avgRecoveryTime.toFixed(1)}s` },
-      { label: 'Time to Peak', value: `${report.breathAnalysis.avgTimeToPeak.toFixed(1)}s` }
+      { 
+        label: 'Events', 
+        value: `${report.breathAnalysis.completedEvents}/${report.breathAnalysis.totalEvents}`,
+        color: '#3b82f6',
+        bgColor: '#eff6ff',
+        icon: '📊'
+      },
+      { 
+        label: 'Peak %', 
+        value: `${report.breathAnalysis.avgPeakPercent.toFixed(1)}%`,
+        color: '#10b981',
+        bgColor: '#ecfdf5',
+        icon: '📈'
+      },
+      { 
+        label: 'Recovery', 
+        value: `${report.breathAnalysis.avgRecoveryTime.toFixed(1)}s`,
+        color: '#f59e0b',
+        bgColor: '#fffbeb',
+        icon: '⏱️'
+      },
+      { 
+        label: 'Time to Peak', 
+        value: `${report.breathAnalysis.avgTimeToPeak.toFixed(1)}s`,
+        color: '#8b5cf6',
+        bgColor: '#f3e8ff',
+        icon: '⚡'
+      }
     ]
     
-    // Create compact 4-column grid for breath metrics
+    // Create enhanced 4-column grid for breath metrics
     const breathGridStartY = yPosition
-    const breathBoxWidth = 40
-    const breathBoxHeight = 12
-    const breathSpacing = 5
+    const breathBoxWidth = 42
+    const breathBoxHeight = 16
+    const breathSpacing = 6
     
     breathMetrics.forEach((metric, index) => {
       const x = 20 + index * (breathBoxWidth + breathSpacing)
       const y = breathGridStartY
       
-      // Add background
-      pdf.setFillColor(249, 250, 251)
+      // Add enhanced background
+      pdf.setFillColor(metric.bgColor)
       pdf.rect(x, y, breathBoxWidth, breathBoxHeight, 'F')
       
-      // Add border
-      pdf.setDrawColor(229, 231, 235)
+      // Add colored border
+      pdf.setDrawColor(metric.color)
+      pdf.setLineWidth(0.5)
       pdf.rect(x, y, breathBoxWidth, breathBoxHeight, 'S')
+      
+      // Add icon
+      pdf.setFontSize(8)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(metric.color)
+      pdf.text(metric.icon, x + 3, y + 6)
       
       // Add label
       pdf.setFontSize(7)
       pdf.setFont('helvetica', 'normal')
       pdf.setTextColor(107, 114, 128)
-      pdf.text(metric.label, x + 2, y + 5)
+      pdf.text(metric.label, x + 8, y + 6)
       
-      // Add value
-      pdf.setFontSize(9)
+      // Add value with enhanced styling
+      pdf.setFontSize(10)
       pdf.setFont('helvetica', 'bold')
-      pdf.setTextColor(31, 41, 55)
-      pdf.text(metric.value, x + 2, y + 10)
+      pdf.setTextColor(metric.color)
+      pdf.text(metric.value, x + 3, y + 13)
     })
     
-    yPosition = breathGridStartY + 15
+    yPosition = breathGridStartY + 20
     addLine()
   }
 
-  // Compact Recent Readings (if available)
+  // Enhanced Recent Readings with better table design
   if (report.readings && report.readings.length > 0) {
     addSectionHeader('Recent Readings')
     
-    // Show only the most recent 5 readings in a compact format
+    // Show only the most recent 5 readings in an enhanced format
     const recentReadings = report.readings.slice(0, 5)
     
-    // Add compact table headers
+    // Add enhanced table headers
     const tableStartY = yPosition
     const colPositions = [20, 60, 90, 120, 150]
     
-    // Table header
-    pdf.setFillColor(249, 250, 251)
-    pdf.rect(20, tableStartY - 3, pageWidth - 40, 8, 'F')
+    // Enhanced table header with better styling
+    pdf.setFillColor(248, 250, 252)
+    pdf.rect(20, tableStartY - 4, pageWidth - 40, 10, 'F')
+    
+    // Add subtle border
+    pdf.setDrawColor(203, 213, 225)
+    pdf.setLineWidth(0.5)
+    pdf.rect(20, tableStartY - 4, pageWidth - 40, 10, 'S')
     
     const headers = ['Time', 'TVOC', 'eCO₂', 'Temp', 'Humidity']
     headers.forEach((header, index) => {
       pdf.setFontSize(8)
       pdf.setFont('helvetica', 'bold')
-      pdf.setTextColor(55, 65, 81)
+      pdf.setTextColor(31, 41, 55)
       pdf.text(header, colPositions[index], tableStartY + 2)
     })
     
-    yPosition = tableStartY + 10
+    yPosition = tableStartY + 8
     
-    // Add recent readings in compact format
-    recentReadings.forEach((reading) => {
+    // Add recent readings with enhanced styling
+    recentReadings.forEach((reading, index) => {
+      // Alternate row colors for better readability
+      if (index % 2 === 0) {
+        pdf.setFillColor(249, 250, 251)
+        pdf.rect(20, yPosition - 2, pageWidth - 40, 8, 'F')
+      }
+      
       const rowData = [
         new Date(reading.recordedAt).toLocaleTimeString().slice(0, 5),
         `${reading.tvoc.toFixed(0)}`,
@@ -305,23 +400,46 @@ export const generateReportPDF = async (report: ReportData): Promise<void> => {
       rowData.forEach((data, colIndex) => {
         pdf.setFontSize(7)
         pdf.setFont('helvetica', 'normal')
-        pdf.setTextColor(0, 0, 0)
-        pdf.text(data, colPositions[colIndex], yPosition)
+        pdf.setTextColor(55, 65, 81)
+        pdf.text(data, colPositions[colIndex], yPosition + 2)
       })
       
-      yPosition += 6
+      yPosition += 8
     })
     
     addLine()
   }
 
-  // Compact Footer
-  const footerY = pageHeight - 15
+  // Enhanced Footer with better styling
+  const footerY = pageHeight - 20
+  
+  // Add subtle footer background
+  pdf.setFillColor(248, 250, 252)
+  pdf.rect(0, footerY - 5, pageWidth, 20, 'F')
+  
+  // Add top border
+  pdf.setDrawColor(229, 231, 235)
+  pdf.setLineWidth(0.5)
+  pdf.line(0, footerY - 5, pageWidth, footerY - 5)
+  
+  pdf.setFontSize(9)
+  pdf.setFont('helvetica', 'bold')
+  pdf.setTextColor(16, 185, 129)
+  pdf.text('ROVOCS', 20, footerY)
+  
   pdf.setFontSize(8)
   pdf.setFont('helvetica', 'normal')
   pdf.setTextColor(107, 114, 128)
-  pdf.text('ROVOCS - Advanced Breath Analysis', 20, footerY)
-  pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - 60, footerY)
+  pdf.text('Advanced Breath Analysis System', 20, footerY + 5)
+  
+  pdf.setFontSize(8)
+  pdf.setFont('helvetica', 'normal')
+  pdf.setTextColor(107, 114, 128)
+  pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - 70, footerY)
+  
+  pdf.setFontSize(7)
+  pdf.setTextColor(156, 163, 175)
+  pdf.text(`Report ID: ${report.id}`, pageWidth - 70, footerY + 5)
 
   // Download the PDF
   const fileName = `ROVOCS_Report_${report.title.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
