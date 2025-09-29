@@ -212,9 +212,8 @@ Generated on: ${new Date().toLocaleString()}
     } else if (avgPeakPercent < 25) {
       quality = 'fair'
       recommendations.push('Moderate VOC concentration. Consider longer exhalation.')
-    } else if (avgPeakPercent < 50) {
-      quality = 'good'
     } else {
+      // Combined good and excellent categories (avgPeakPercent >= 25%)
       quality = 'excellent'
     }
 
@@ -486,7 +485,6 @@ Generated on: ${new Date().toLocaleString()}
                     
                     const qualityColors = {
                       excellent: 'text-green-600 bg-green-50',
-                      good: 'text-blue-600 bg-blue-50',
                       fair: 'text-yellow-600 bg-yellow-50',
                       poor: 'text-red-600 bg-red-50'
                     }

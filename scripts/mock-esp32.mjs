@@ -1,23 +1,15 @@
-/**
- * Mock ESP32 Simulator
- * Based on esp32.ino - Simulates ESP32 device behavior in JavaScript
- * 
- * This script simulates the ESP32 device sending sensor data to the ROVOCS web application.
- * It mimics the behavior of the Arduino code but runs in Node.js environment.
- */
-
 import https from 'https';
 import http from 'http';
 
-// Configuration (matching esp32.ino)
+// Configuration
 const CONFIG = {
   // Server Configuration
-  serverUrl: 'https://rovocs-web.vercel.app/api/device-data', // Change to your server URL
+  serverUrl: 'https://rovocs-web.vercel.app/api/device-data', // dont change
   deviceSerial: '1234MOCKESP', // Mock device serial
   pairingCode: 'E94TWA', // Mock pairing code
   
   // Data sending configuration
-  sendInterval: 1000, // Send data every 1 second (real-time)
+  sendInterval: 2000, // Send data every 1 second (real-time)
   
   // Sensor simulation parameters
   sensors: {
@@ -78,8 +70,8 @@ function connectToWiFi() {
   // Simulate connection delay
   setTimeout(() => {
     state.wifiConnected = true;
-    console.log('✅ Wi-Fi connected!');
-    console.log('📡 IP address: 192.168.1.100 (simulated)');
+    console.log('Wi-Fi connected!');
+    console.log('IP address: 192.168.1.100 (simulated)');
   }, 2000);
 }
 

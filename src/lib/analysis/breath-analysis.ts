@@ -369,7 +369,7 @@ export class BreathAnalysisUtils {
    * Get breath quality assessment
    */
   static assessBreathQuality(metrics: BreathMetrics[]): {
-    overall: 'excellent' | 'good' | 'fair' | 'poor'
+    overall: 'excellent' | 'fair' | 'poor'
     tvocScore: number
     eco2Score: number
     recommendations: string[]
@@ -383,10 +383,8 @@ export class BreathAnalysisUtils {
 
     if (tvocMetric) {
       // Score based on peak percentage and recovery time
-      if (tvocMetric.peakPercent > 50 && tvocMetric.recoveryTime && tvocMetric.recoveryTime < 10) {
-        tvocScore = 100
-      } else if (tvocMetric.peakPercent > 25 && tvocMetric.recoveryTime && tvocMetric.recoveryTime < 20) {
-        tvocScore = 75
+      if (tvocMetric.peakPercent > 25 && tvocMetric.recoveryTime && tvocMetric.recoveryTime < 20) {
+        tvocScore = 100 // Combined good and excellent (>= 25%)
       } else if (tvocMetric.peakPercent > 10) {
         tvocScore = 50
       } else {
@@ -397,10 +395,8 @@ export class BreathAnalysisUtils {
 
     if (eco2Metric) {
       // Score based on peak percentage and recovery time
-      if (eco2Metric.peakPercent > 30 && eco2Metric.recoveryTime && eco2Metric.recoveryTime < 15) {
-        eco2Score = 100
-      } else if (eco2Metric.peakPercent > 15 && eco2Metric.recoveryTime && eco2Metric.recoveryTime < 30) {
-        eco2Score = 75
+      if (eco2Metric.peakPercent > 15 && eco2Metric.recoveryTime && eco2Metric.recoveryTime < 30) {
+        eco2Score = 100 // Combined good and excellent (>= 15%)
       } else if (eco2Metric.peakPercent > 5) {
         eco2Score = 50
       } else {
@@ -410,12 +406,10 @@ export class BreathAnalysisUtils {
     }
 
     const overallScore = (tvocScore + eco2Score) / 2
-    let overall: 'excellent' | 'good' | 'fair' | 'poor'
+    let overall: 'excellent' | 'fair' | 'poor'
 
-    if (overallScore >= 90) {
-      overall = 'excellent'
-    } else if (overallScore >= 70) {
-      overall = 'good'
+    if (overallScore >= 70) {
+      overall = 'excellent' // Combined good and excellent categories
     } else if (overallScore >= 50) {
       overall = 'fair'
     } else {
