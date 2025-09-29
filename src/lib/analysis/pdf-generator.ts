@@ -100,25 +100,27 @@ export const generateReportPDF = async (report: ReportData): Promise<void> => {
   yPosition += 5
   addLine()
 
-  // Compact Report Information
+  // Improved Report Information Layout
   addSectionHeader('Report Information')
   
-  // Create a compact layout for report info
+  // Create a better two-column layout for report info
   const leftColumn = 20
+  const rightColumn = 120
   
-  addText(`Date: ${report.date.toLocaleDateString()}`, 9, false, '#6b7280', leftColumn)
-  addText(`Duration: ${report.duration}`, 9, false, '#6b7280', leftColumn + 60)
-  addText(`Readings: ${report.readingCount}`, 9, false, '#6b7280', leftColumn + 120)
+  // Left column
+  addText(`Date: ${report.date.toLocaleDateString()}`, 10, false, '#374151', leftColumn)
+  addText(`Duration: ${report.duration}`, 10, false, '#374151', leftColumn)
+  addText(`Readings: ${report.readingCount}`, 10, false, '#374151', leftColumn)
   
-  // Status with color coding
+  // Right column
   const statusColor = report.status === 'completed' ? '#10b981' : 
                      report.status === 'processing' ? '#f59e0b' : '#ef4444'
-  addText(`Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}`, 9, true, statusColor, leftColumn + 180)
+  addText(`Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}`, 10, true, statusColor, rightColumn)
   
   if (report.device) {
-    addText(`Device: ${report.device.name}`, 9, false, '#6b7280', leftColumn)
+    addText(`Device: ${report.device.name}`, 10, false, '#374151', rightColumn)
   } else {
-    addText(`Device: Removed (Historical)`, 9, false, '#6b7280', leftColumn)
+    addText(`Device: Removed (Historical)`, 10, false, '#374151', rightColumn)
   }
   
   addLine()
