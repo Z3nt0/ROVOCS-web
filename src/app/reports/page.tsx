@@ -224,14 +224,22 @@ export default function ReportsPage() {
       await generateReportPDF(reportData)
     } catch (error) {
       console.error('Error generating PDF:', error)
-      // Fallback to original download if PDF generation fails
+      
+      // Try fallback to original download if PDF generation fails
       if (report.fileUrl) {
-        const link = document.createElement('a')
-        link.href = report.fileUrl
-        link.download = `${report.title}.pdf`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+        try {
+          const link = document.createElement('a')
+          link.href = report.fileUrl
+          link.download = `${report.title}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        } catch (fallbackError) {
+          console.error('Fallback download also failed:', fallbackError)
+          alert('Failed to download report. Please try again or contact support if the issue persists.')
+        }
+      } else {
+        alert('No report file available for download. Please try again or contact support if the issue persists.')
       }
     } finally {
       setDownloadingReportId(null)

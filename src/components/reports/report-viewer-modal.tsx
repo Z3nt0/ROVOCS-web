@@ -112,12 +112,48 @@ export const ReportViewerModal = ({ isOpen, onClose, reportId }: ReportViewerMod
     } catch (error) {
       console.error('Error generating PDF:', error)
       
-      // Try alternative PDF generation method
+      // Try alternative PDF generation method using structured data
       try {
-        console.log('Trying alternative PDF generation...')
+        console.log('Trying alternative PDF generation with structured data...')
         
-        // Create a simple text-based report as fallback
-        const reportText = `
+        if (!report) {
+          throw new Error('Report data not available')
+        }
+        
+        // Create structured report data for PDF generation
+        const reportData = {
+          id: report.id,
+          title: report.name || 'Report',
+          date: new Date(report.from),
+          duration: formatDuration(report.from, report.to),
+          readingCount: report.readingsCount || 0,
+          status: 'completed' as const,
+          summary: {
+            avgTVOC: report.analytics?.avgTVOC || 0,
+            avgECO2: report.analytics?.avgECO2 || 0,
+            avgTemperature: report.analytics?.avgTemperature || 0,
+            avgHumidity: report.analytics?.avgHumidity || 0
+          },
+          device: report.device ? {
+            name: report.device.name,
+            serial: report.device.serial
+          } : undefined,
+          readings: report.readings || []
+        }
+        
+        // Import and use the structured PDF generator
+        const { generateReportPDF } = await import('@/lib/analysis/pdf-generator')
+        await generateReportPDF(reportData)
+        
+        console.log('Alternative PDF generation successful')
+      } catch (fallbackError) {
+        console.error('Alternative PDF generation failed:', fallbackError)
+        
+        // Final fallback: Create a simple text-based report
+        try {
+          console.log('Creating text report as final fallback...')
+          
+          const reportText = `
 ROVOCS Respiratory Health Report
 ${report?.name || 'Report'}
 
@@ -135,24 +171,25 @@ Summary Statistics:
 - Average Humidity: ${report?.analytics?.avgHumidity?.toFixed(1) || 'N/A'}%
 
 Generated on: ${new Date().toLocaleString()}
-        `.trim()
-        
-        // Create and download text file as fallback
-        const blob = new Blob([reportText], { type: 'text/plain' })
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `ROVOCS_Report_${(report?.name || 'Report').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-        
-        console.log('Fallback text report generated')
-        alert('PDF generation failed, but a text report has been downloaded instead.')
-      } catch (fallbackError) {
-        console.error('Fallback PDF generation also failed:', fallbackError)
-        alert('Failed to generate report. Please try again or contact support if the issue persists.')
+          `.trim()
+          
+          // Create and download text file as final fallback
+          const blob = new Blob([reportText], { type: 'text/plain' })
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `ROVOCS_Report_${(report?.name || 'Report').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+          
+          console.log('Text report generated as final fallback')
+          alert('PDF generation failed, but a text report has been downloaded instead.')
+        } catch (finalError) {
+          console.error('Final fallback also failed:', finalError)
+          alert('Failed to generate report. Please try again or contact support if the issue persists.')
+        }
       }
     } finally {
       setIsDownloading(false)

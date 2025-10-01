@@ -229,16 +229,22 @@ export const generateReportPDFFromElement = async (elementId: string, reportTitl
 
   try {
     console.log('PDF Generation: Starting html2canvas...')
+    
+    // Wait a bit for any animations or loading to complete
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
     const canvas = await html2canvas(element, {
-      scale: 1, // Reduced scale to avoid memory issues
+      scale: 0.8, // Further reduced scale to avoid memory issues
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
-      logging: true, // Enable logging for debugging
+      logging: false, // Disable logging to reduce console noise
       width: element.scrollWidth,
       height: element.scrollHeight,
       scrollX: 0,
-      scrollY: 0
+      scrollY: 0,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight
     })
 
     console.log('PDF Generation: Canvas created, dimensions:', {
@@ -246,8 +252,16 @@ export const generateReportPDFFromElement = async (elementId: string, reportTitl
       height: canvas.height
     })
 
-    const imgData = canvas.toDataURL('image/png', 0.8) // Reduced quality to avoid size issues
+    if (canvas.width === 0 || canvas.height === 0) {
+      throw new Error('Canvas has zero dimensions - element may not be visible or rendered')
+    }
+
+    const imgData = canvas.toDataURL('image/png', 0.7) // Further reduced quality
     console.log('PDF Generation: Image data created, length:', imgData.length)
+
+    if (!imgData || imgData === 'data:,') {
+      throw new Error('Failed to generate image data from canvas')
+    }
 
     const pdf = new jsPDF('p', 'mm', 'a4')
     const pageWidth = pdf.internal.pageSize.getWidth()

@@ -20,6 +20,7 @@ const eslintConfig = [
       "next-env.d.ts",
       "src/generated/**",
       "prisma/migrations/**",
+      "scripts/**",
     ],
   },
 ];
