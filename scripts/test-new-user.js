@@ -163,4 +163,12 @@ async function testNewUser() {
   console.log('=========================');
 }
 
+<<<<<<< HEAD
 testNewUser();
+=======
+testNewUser();
+
+
+
+
+>>>>>>> ecbaa8e3424b08b892e98ebf67a071ee3836b289
