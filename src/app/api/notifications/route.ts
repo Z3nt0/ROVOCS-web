@@ -12,6 +12,9 @@ interface NotificationItem {
   color: string
 }
 
+// In-memory storage for notification read states
+const notificationReadStates = new Map<string, Set<string>>()
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -69,18 +72,22 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Get user's read notification IDs
+    const userReadNotifications = notificationReadStates.get(userId) || new Set()
+
     // Create notification items
     const notifications: NotificationItem[] = []
 
     // Add reading notifications
     recentReadings.forEach(reading => {
+      const notificationId = `reading-${reading.id}`
       notifications.push({
-        id: `reading-${reading.id}`,
+        id: notificationId,
         type: 'reading',
         title: 'New reading recorded',
         message: `TVOC: ${reading.tvoc.toFixed(1)} ppb, eCO₂: ${reading.eco2.toFixed(0)} ppm from ${reading.device.name}`,
         timestamp: reading.recordedAt,
-        isRead: false,
+        isRead: userReadNotifications.has(notificationId),
         icon: 'Activity',
         color: 'blue'
       })
@@ -88,13 +95,14 @@ export async function GET(request: NextRequest) {
 
     // Add report notifications
     recentReports.forEach(report => {
+      const notificationId = `report-${report.id}`
       notifications.push({
-        id: `report-${report.id}`,
+        id: notificationId,
         type: 'report',
         title: 'Report generated',
         message: `New report created for analysis`,
         timestamp: report.createdAt,
-        isRead: false,
+        isRead: userReadNotifications.has(notificationId),
         icon: 'FileText',
         color: 'purple'
       })
@@ -107,13 +115,14 @@ export async function GET(request: NextRequest) {
         const isRecent = (Date.now() - new Date(lastReading.recordedAt).getTime()) < 10 * 60 * 1000 // 10 minutes
         
         if (isRecent) {
+          const notificationId = `device-${device.id}`
           notifications.push({
-            id: `device-${device.id}`,
+            id: notificationId,
             type: 'device',
             title: `${device.name} connected`,
             message: `Device ${device.serial} is online and sending data`,
             timestamp: lastReading.recordedAt,
-            isRead: false,
+            isRead: userReadNotifications.has(notificationId),
             icon: 'Wifi',
             color: 'green'
           })
@@ -143,19 +152,46 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { notificationId, action } = body
+    const { userId, notificationIds, action } = body
 
-    if (!notificationId || !action) {
-      return NextResponse.json({ error: 'Notification ID and action are required' }, { status: 400 })
+    if (!userId || !action) {
+      return NextResponse.json({ error: 'User ID and action are required' }, { status: 400 })
     }
 
-    // Handle notification actions (mark as read, delete, etc.)
-    // For now, we'll just return success since we're not persisting notification states
-    // In a real app, you'd have a notifications table to track read/unread states
+    // Get or create user's read notifications set
+    if (!notificationReadStates.has(userId)) {
+      notificationReadStates.set(userId, new Set())
+    }
+    const userReadNotifications = notificationReadStates.get(userId)!
+
+    if (action === 'markAsRead') {
+      if (notificationIds && Array.isArray(notificationIds)) {
+        // Mark specific notifications as read
+        notificationIds.forEach((id: string) => {
+          userReadNotifications.add(id)
+        })
+      } else {
+        // Mark all notifications as read
+        // This will be handled by the frontend when "Mark all as read" is clicked
+        return NextResponse.json({ 
+          success: true, 
+          message: 'All notifications marked as read' 
+        }, { status: 200 })
+      }
+    } else if (action === 'markAllAsRead') {
+      // Mark all notifications as read by fetching current notifications and marking them
+      const response = await fetch(`${request.url.split('/api')[0]}/api/notifications?userId=${userId}&limit=100`)
+      if (response.ok) {
+        const data = await response.json()
+        data.notifications.forEach((notification: NotificationItem) => {
+          userReadNotifications.add(notification.id)
+        })
+      }
+    }
 
     return NextResponse.json({ 
       success: true, 
-      message: `Notification ${action} successfully` 
+      message: `Notifications ${action} successfully` 
     }, { status: 200 })
 
   } catch (error) {

@@ -296,23 +296,27 @@ Generated on: ${new Date().toLocaleString()}
     >
       <div 
         id="report-modal-content"
-        className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar touch-pan-y"
+        className="max-h-[70vh] sm:max-h-[70vh] overflow-y-auto pr-1 sm:pr-2 custom-scrollbar touch-pan-y flex-1"
         style={{
           scrollbarWidth: 'thin',
           scrollbarColor: '#d1d5db #f3f4f6'
         }}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 space-y-2 sm:space-y-0">
-          <div>
-            <p className="text-sm sm:text-base text-gray-600">
-              {report?.device?.name || 'Device Removed'} • {report?.readingsCount || 0} readings
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
+        {/* Header Section - Mobile Optimized */}
+        <div className="flex flex-col space-y-3 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {report?.device?.name || 'Device Removed'}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {report?.readingsCount || 0} readings
+              </p>
+            </div>
             <Button
               onClick={handleDownload}
               disabled={isDownloading}
-              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed mobile-touch-target"
             >
               {isDownloading ? (
                 <>
@@ -348,13 +352,13 @@ Generated on: ${new Date().toLocaleString()}
               <p className="text-lg font-medium">Error Loading Report</p>
               <p className="text-sm">{error}</p>
             </div>
-            <Button onClick={fetchReportDetails} variant="outline">
+            <Button onClick={fetchReportDetails} variant="outline" className="mobile-touch-target">
               Try Again
             </Button>
           </div>
         ) : report ? (
-          <div className="space-y-6">
-            {/* Session Info */}
+          <div className="space-y-3 sm:space-y-4">
+            {/* Session Info - Mobile Optimized */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center text-base sm:text-lg">
@@ -363,26 +367,32 @@ Generated on: ${new Date().toLocaleString()}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <div>
                     <p className="text-xs sm:text-sm text-gray-500">Start Time</p>
-                    <p className="text-sm sm:text-base font-medium">{new Date(report.from).toLocaleString()}</p>
+                    <p className="text-sm sm:text-base font-medium mobile-text">
+                      {new Date(report.from).toLocaleString()}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs sm:text-sm text-gray-500">End Time</p>
-                    <p className="text-sm sm:text-base font-medium">{new Date(report.to).toLocaleString()}</p>
+                    <p className="text-sm sm:text-base font-medium mobile-text">
+                      {new Date(report.to).toLocaleString()}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs sm:text-sm text-gray-500">Duration</p>
-                    <p className="text-sm sm:text-base font-medium">{formatDuration(report.from, report.to)}</p>
+                    <p className="text-sm sm:text-base font-medium mobile-text">
+                      {formatDuration(report.from, report.to)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Analytics Summary */}
+            {/* Analytics Summary - Mobile Optimized */}
             {stats && (
-              <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                 <Card>
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center justify-between">
@@ -447,7 +457,7 @@ Generated on: ${new Date().toLocaleString()}
               </div>
             )}
 
-            {/* Breath Analysis Section */}
+            {/* Breath Analysis Section - Mobile Optimized */}
             {report.analytics && (
               <Card>
                 <CardHeader className="pb-3">
@@ -460,7 +470,7 @@ Generated on: ${new Date().toLocaleString()}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
                     <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
                       <div className="text-xs sm:text-sm text-blue-600 font-medium mb-1">Baseline TVOC</div>
                       <div className="text-lg sm:text-2xl font-bold text-blue-700">
@@ -502,7 +512,7 @@ Generated on: ${new Date().toLocaleString()}
                     </div>
                     
                     <div className="bg-pink-50 p-3 sm:p-4 rounded-lg">
-                      <div className="text-xs sm:text-sm text-pink-600 font-medium mb-1">Total Readings</div>
+                      <div className="text-xs sm:text-sm text-pink-600 dark:text-pink-400 font-medium mb-1">Total Readings</div>
                       <div className="text-lg sm:text-2xl font-bold text-pink-700">
                         {report.analytics.totalReadings}
                       </div>
@@ -510,7 +520,7 @@ Generated on: ${new Date().toLocaleString()}
                     </div>
                   </div>
                   
-                  {/* Breath Quality Assessment */}
+                  {/* Breath Quality Assessment - Mobile Optimized */}
                   {(() => {
                     const assessment = getBreathQualityAssessment({
                       avgPeakPercent: ((report.analytics.maxTVOC - report.analytics.avgTVOC) / report.analytics.avgTVOC) * 100,
@@ -527,9 +537,9 @@ Generated on: ${new Date().toLocaleString()}
                     }
                     
                     return (
-                      <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
-                          <h4 className="text-base sm:text-lg font-semibold text-gray-900">Breath Quality Assessment</h4>
+                          <h4 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Breath Quality Assessment</h4>
                           <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-medium w-fit ${qualityColors[assessment.quality as keyof typeof qualityColors]}`}>
                             {assessment.quality.charAt(0).toUpperCase() + assessment.quality.slice(1)}
                           </span>
@@ -555,7 +565,7 @@ Generated on: ${new Date().toLocaleString()}
               </Card>
             )}
 
-            {/* Recent Readings */}
+            {/* Recent Readings - Mobile Optimized */}
             {report.readings && report.readings.length > 0 && (
               <Card>
                 <CardHeader className="pb-3">
@@ -568,7 +578,7 @@ Generated on: ${new Date().toLocaleString()}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-64 overflow-y-auto">
+                  <div className="space-y-2 max-h-40 sm:max-h-48 overflow-y-auto">
                     {report.readings.slice(0, 10).map((reading, index) => (
                       <motion.div
                         key={reading.id}
@@ -615,15 +625,15 @@ Generated on: ${new Date().toLocaleString()}
               </Card>
             )}
 
-            {/* Empty State */}
+            {/* Empty State - Mobile Optimized */}
             {(!report.readings || report.readings.length === 0) && (
               <Card>
-                <CardContent className="text-center py-8 sm:py-12">
-                  <Activity className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                <CardContent className="text-center py-6 sm:py-8">
+                  <Activity className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400 mx-auto mb-2 sm:mb-3" />
+                  <h3 className="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100 mb-1">
                     No readings available
                   </h3>
-                  <p className="text-sm sm:text-base text-gray-600">
+                  <p className="text-xs sm:text-sm text-gray-600">
                     This report doesn&apos;t contain detailed sensor readings
                   </p>
                 </CardContent>

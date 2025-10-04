@@ -287,7 +287,7 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -314,7 +314,7 @@ export default function ReportsPage() {
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                   Reports & Analytics
                 </h1>
                 <p className="text-sm sm:text-base text-gray-600">
@@ -346,7 +346,7 @@ export default function ReportsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-600">Total Reports</p>
-                      <p className="text-lg sm:text-2xl font-bold text-gray-900">{reports.length}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{reports.length}</p>
                     </div>
                     <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-green-600 flex-shrink-0" />
                   </div>
@@ -363,8 +363,8 @@ export default function ReportsPage() {
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <p className="text-xs sm:text-sm font-medium text-gray-600">Total Readings</p>
-                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">Total Readings</p>
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {reports.reduce((sum, report) => sum + report.readings, 0).toLocaleString()}
                       </p>
                     </div>
@@ -384,7 +384,7 @@ export default function ReportsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-600">Avg TVOC</p>
-                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {calculateAverage(reports, report => report.summary.avgTVOC)}
                       </p>
                     </div>
@@ -404,7 +404,7 @@ export default function ReportsPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-600">Avg eCO₂</p>
-                      <p className="text-lg sm:text-2xl font-bold text-gray-900">
+                      <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                         {calculateAverage(reports, report => report.summary.avgECO2)}
                       </p>
                     </div>
@@ -499,7 +499,7 @@ export default function ReportsPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
                       <div className="flex-1">
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-3 sm:mb-2">
-                          <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                             {report.title}
                           </h3>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium w-fit ${getStatusColor(report.status)}`}>
@@ -599,7 +599,7 @@ export default function ReportsPage() {
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
               </div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                 No reports available
               </h3>
               <p className="text-sm sm:text-base text-gray-600 mb-6">

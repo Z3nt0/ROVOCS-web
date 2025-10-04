@@ -32,11 +32,11 @@ export const AnalyticsChart = ({ title, data, type = 'bar' }: AnalyticsChartProp
 
   if (type === 'donut') {
     return (
-      <Card>
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle className="text-lg">{title}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 flex flex-col">
           <div className="flex items-center justify-center">
             <div className="relative w-32 h-32">
               <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
@@ -64,13 +64,13 @@ export const AnalyticsChart = ({ title, data, type = 'bar' }: AnalyticsChartProp
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-gray-900">{totalValue}</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalValue}</div>
                   <div className="text-xs text-gray-500">Total</div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2 flex-1">
             {data.map((item, index) => (
               <motion.div
                 key={item.label}
@@ -99,11 +99,11 @@ export const AnalyticsChart = ({ title, data, type = 'bar' }: AnalyticsChartProp
   }
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle className="text-lg">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         <div className="space-y-4">
           {data.map((item, index) => (
             <motion.div
@@ -122,7 +122,7 @@ export const AnalyticsChart = ({ title, data, type = 'bar' }: AnalyticsChartProp
                   <span className="text-sm font-medium text-gray-700">{item.label}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-bold text-gray-900">{item.value}</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{item.value}</span>
                   {getTrendIcon(item.trend)}
                 </div>
               </div>

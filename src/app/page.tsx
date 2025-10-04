@@ -51,7 +51,7 @@ export default function Home() {
                 <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
                   <Activity className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900">ROVOCS</span>
+                <span className="text-xl font-bold text-gray-900 dark:text-gray-100">ROVOCS</span>
               </motion.div>
             </div>
             <motion.div
@@ -79,7 +79,7 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="mb-8"
           >
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6">
               Monitor Your
               <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                 {' '}Respiratory Health
@@ -173,27 +173,27 @@ export default function Home() {
             transition={{ delay: 0.6, duration: 0.6 }}
             className="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto"
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">How It Works</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">How It Works</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-white">1</span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Connect Device</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Connect Device</h3>
                 <p className="text-gray-600">Pair your ESP32 sensor with your account</p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-white">2</span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Breathe Into Sensor</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Breathe Into Sensor</h3>
                 <p className="text-gray-600">Follow the guided breathing instructions</p>
               </div>
               <div className="text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-white">3</span>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">View Results</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">View Results</h3>
                 <p className="text-gray-600">Analyze your respiratory health data</p>
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-black text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <motion.div

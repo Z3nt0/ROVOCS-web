@@ -88,7 +88,7 @@ export default function LoginPage() {
               <div className="mx-auto w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center mb-4">
                 <Lock className="w-6 h-6 text-white" />
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-900">
+              <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Welcome Back
               </CardTitle>
               <CardDescription className="text-gray-600">

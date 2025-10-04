@@ -194,7 +194,7 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                       <span className="text-xs sm:text-sm font-medium text-green-600">1</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 text-sm sm:text-base">Upload Firmware</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">Upload Firmware</h4>
                       <p className="text-xs sm:text-sm text-gray-600">
                         Upload the ROVOCS firmware to your ESP32 device
                       </p>
@@ -206,7 +206,7 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                       <span className="text-xs sm:text-sm font-medium text-green-600">2</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 text-sm sm:text-base">Configure Wi-Fi</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">Configure Wi-Fi</h4>
                       <p className="text-xs sm:text-sm text-gray-600">
                         Set up Wi-Fi credentials in the device configuration
                       </p>
@@ -218,7 +218,7 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                       <span className="text-xs sm:text-sm font-medium text-green-600">3</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 text-sm sm:text-base">Enter Pairing Code</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">Enter Pairing Code</h4>
                       <p className="text-xs sm:text-sm text-gray-600">
                         Use the pairing code below to authenticate the device
                       </p>
@@ -230,7 +230,7 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
                       <span className="text-xs sm:text-sm font-medium text-green-600">4</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-gray-900 text-sm sm:text-base">Test Connection</h4>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">Test Connection</h4>
                       <p className="text-xs sm:text-sm text-gray-600">
                         Verify the device is sending data to your account
                       </p>
@@ -412,15 +412,15 @@ export function ConnectDeviceModal({ isOpen, onClose, onDeviceConnected, user }:
             <CardContent className="pt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
                 <div className="w-full">
-                  <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Wi-Fi Settings</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2 text-sm sm:text-base">Wi-Fi Settings</h4>
                   <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                     <p><strong>SSID:</strong> Your Wi-Fi network name</p>
                     <p><strong>Password:</strong> Your Wi-Fi password</p>
-                    <p><strong>Server URL:</strong> <code className="bg-gray-100 px-1 rounded text-xs">http://your-domain.com</code></p>
+                    <p><strong>Server URL:</strong> <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded text-xs">http://your-domain.com</code></p>
                   </div>
                 </div>
                 <div className="w-full">
-                  <h4 className="font-medium text-gray-900 mb-2 text-sm sm:text-base">Device Settings</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2 text-sm sm:text-base">Device Settings</h4>
                   <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
                     <p><strong>Pairing Code:</strong> <code className="bg-green-100 px-1 rounded text-xs">{pairingCode}</code></p>
                     <p><strong>Update Interval:</strong> 2 seconds</p>

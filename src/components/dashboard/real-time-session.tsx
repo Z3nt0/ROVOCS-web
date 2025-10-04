@@ -660,7 +660,7 @@ export const RealTimeSession = ({ sessionData, onEndSession }: RealTimeSessionPr
                   <div className="font-semibold">{formatTime(sessionTime)}</div>
                 </div>
                 <div>
-                  <div className="text-gray-500">Total Readings</div>
+                  <div className="text-gray-500 dark:text-gray-400">Total Readings</div>
                   <div className="font-semibold">{readings.length}</div>
                 </div>
                 <div>

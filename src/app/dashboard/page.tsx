@@ -109,7 +109,6 @@ export default function DashboardPage() {
       setIsLoading(true)
     } else if (status === 'unauthenticated') {
       console.log('User not authenticated, redirecting to login')
-      // Redirect immediately to login if not authenticated
       router.replace('/auth/login')
     } else if (status === 'authenticated') {
       console.log('User authenticated, showing dashboard')
@@ -287,30 +286,9 @@ export default function DashboardPage() {
     )
   }
 
-  // Don't render anything if we don't have a session and we're not loading
-  // But also check if we have a stored session to prevent unnecessary redirects
-  if (!session?.user && status === 'unauthenticated') {
-    const storedSession = localStorage.getItem('user-session')
-    if (storedSession) {
-      const sessionData = JSON.parse(storedSession)
-      const timeDiff = Date.now() - sessionData.timestamp
-      // If we have a recent stored session, show loading instead of redirecting
-      if (timeDiff < 24 * 60 * 60 * 1000) {
-        return (
-          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full"
-            />
-            <div className="ml-4">
-              <p className="text-sm text-gray-600">Restoring session...</p>
-            </div>
-          </div>
-        )
-      }
-    }
-    return null
+  // Simple redirect logic - if not authenticated, redirect to login
+  if (status === 'unauthenticated') {
+    return null // The useEffect will handle the redirect
   }
 
   return (
@@ -324,7 +302,7 @@ export default function DashboardPage() {
               transition={{ duration: 0.5 }}
               className="mb-8"
             >
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 Welcome to ROVOCS
               </h2>
               <p className="text-gray-600">

@@ -1,7 +1,7 @@
 'use client'
 
-import { ReactNode, useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { ReactNode } from 'react'
+import { useSession, signOut } from 'next-auth/react'
 import { DashboardSidebar } from './dashboard-sidebar'
 import { Navbar } from '../shared/navbar'
 
@@ -10,39 +10,32 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+  const { data: session, status } = useSession()
 
-  useEffect(() => {
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      setUser(JSON.parse(userData))
-      setIsLoading(false)
-    } else {
-      router.push('/auth/login')
-    }
-  }, [router])
-
-  const handleLogout = () => {
-    localStorage.removeItem('user')
-    router.push('/')
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' })
   }
 
-  if (isLoading) {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
-  if (!user) {
+  if (!session?.user) {
     return null
   }
 
+  const user = {
+    id: (session.user as { id?: string }).id || session.user.email || '',
+    name: session.user.name || '',
+    email: session.user.email || ''
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-black">
       {/* Navbar */}
       <Navbar 
         user={user} 

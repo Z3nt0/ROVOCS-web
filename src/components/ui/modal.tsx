@@ -40,11 +40,11 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className={`relative bg-white w-full h-full sm:h-auto sm:rounded-lg shadow-xl sm:mx-4 max-h-[100vh] sm:max-h-[90vh] flex flex-col ${sizeClasses[size]} sm:max-w-4xl mobile-modal`}
+            className={`relative bg-white dark:bg-black w-full h-full sm:h-auto sm:rounded-lg shadow-xl sm:mx-4 max-h-[100vh] sm:max-h-[90vh] flex flex-col ${sizeClasses[size]} sm:max-w-4xl mobile-modal`}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 pr-2">{title}</h2>
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 pr-2">{title}</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -56,7 +56,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             </div>
             
             {/* Content */}
-            <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
+            <div className="p-3 sm:p-6 flex-1 overflow-y-auto">
               {children}
             </div>
           </motion.div>

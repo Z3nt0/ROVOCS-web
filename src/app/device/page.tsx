@@ -90,6 +90,15 @@ export default function DevicePage() {
         const data = await response.json()
         if (data.length > 0) {
           const deviceData = data[0] // Get the first (and only) device
+          
+          // Fetch total readings count for this device
+          const readingsResponse = await fetch(`/api/readings?deviceId=${deviceData.id}`)
+          let totalReadings = 0
+          if (readingsResponse.ok) {
+            const readingsData = await readingsResponse.json()
+            totalReadings = readingsData.pagination?.total || 0
+          }
+          
           const transformedDevice = {
             id: deviceData.id,
             name: deviceData.name,
@@ -98,7 +107,7 @@ export default function DevicePage() {
               (Date.now() - new Date(deviceData.readings[0].recordedAt).getTime()) < 5 * 60 * 1000, // 5 minutes
             lastSeen: deviceData.readings && deviceData.readings.length > 0 ? 
               new Date(deviceData.readings[0].recordedAt) : null,
-            readings: deviceData.readings ? deviceData.readings.length : 0,
+            readings: totalReadings, // Use actual total count from readings API
             createdAt: deviceData.createdAt,
             avgTvoc: deviceData.readings && deviceData.readings.length > 0 ? 
               deviceData.readings.reduce((sum: number, r: { tvoc: number }) => sum + r.tvoc, 0) / deviceData.readings.length : 0,
@@ -202,7 +211,7 @@ export default function DevicePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -214,7 +223,7 @@ export default function DevicePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -240,7 +249,7 @@ export default function DevicePage() {
             className="mb-6 sm:mb-8"
           >
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 ESP32 Device Status
               </h1>
               <p className="text-sm sm:text-base text-gray-600">
@@ -296,7 +305,7 @@ export default function DevicePage() {
                           variant="ghost" 
                           size="sm"
                           onClick={() => setIsSettingsModalOpen(true)}
-                          className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                          className="text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-900"
                         >
                           <Settings className="w-4 h-4" />
                         </Button>
@@ -305,8 +314,8 @@ export default function DevicePage() {
                   </CardHeader>
                   <CardContent className="pt-0">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg">
-                        <span className="text-xs sm:text-sm font-medium text-gray-700">Device Status</span>
+                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-black rounded-lg">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Device Status</span>
                         <div className="flex items-center space-x-2">
                           {device.isConnected ? (
                             <>
@@ -322,21 +331,21 @@ export default function DevicePage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg">
-                        <span className="text-xs sm:text-sm font-medium text-gray-700">Last Activity</span>
+                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-black rounded-lg">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Last Activity</span>
                         <div className="flex items-center space-x-2">
                           <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-                          <span className="text-xs sm:text-sm text-gray-600">
+                          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                             {device.lastSeen ? new Date(device.lastSeen).toLocaleString() : 'Never'}
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-lg sm:col-span-2 lg:col-span-1">
-                        <span className="text-xs sm:text-sm font-medium text-gray-700">Total Readings</span>
+                      <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-lg sm:col-span-2 lg:col-span-1">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">Total Readings</span>
                         <div className="flex items-center space-x-2">
                           <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-                          <span className="text-xs sm:text-sm text-gray-600">{device.readings.toLocaleString()}</span>
+                          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{device.readings.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -352,7 +361,7 @@ export default function DevicePage() {
               >
                 <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0 w-full">
                   <div className="flex-1">
-                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Sensor Status</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Sensor Status</h2>
                     <p className="text-sm sm:text-base text-gray-600">Individual sensor readings and status</p>
                   </div>
                   <Button
@@ -400,7 +409,7 @@ export default function DevicePage() {
                                   }`} />
                                 </div>
                                 <div>
-                                  <h3 className="text-sm sm:text-base font-medium text-gray-900">{sensor.name}</h3>
+                                  <h3 className="text-sm sm:text-base font-medium text-gray-900 dark:text-gray-100">{sensor.name}</h3>
                                   <p className="text-xs text-gray-500">{sensor.type}</p>
                                 </div>
                               </div>
@@ -420,19 +429,19 @@ export default function DevicePage() {
                             
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs sm:text-sm text-gray-600">Current Value</span>
-                                <span className="text-sm sm:text-lg font-semibold text-gray-900">
+                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Current Value</span>
+                                <span className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
                                   {sensor.value !== null && sensor.value !== undefined ? `${sensor.value.toFixed(1)} ${sensor.unit}` : 'N/A'}
                                 </span>
                               </div>
                               
                               <div className="flex items-center justify-between">
-                                <span className="text-xs sm:text-sm text-gray-600">Status</span>
+                                <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Status</span>
                                 <div className="flex items-center space-x-2">
                                   <div className={`w-2 h-2 rounded-full ${
                                     sensor.status === 'online' ? 'bg-green-500' : 'bg-red-500'
                                   }`} />
-                                  <span className="text-xs sm:text-sm text-gray-600">
+                                  <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                                     {sensor.status === 'online' ? 'Active' : 'Inactive'}
                                   </span>
                                 </div>
@@ -456,7 +465,7 @@ export default function DevicePage() {
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Smartphone className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
               </div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No device connected</h3>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No device connected</h3>
               <p className="text-sm sm:text-base text-gray-600 mb-6">Connect your ESP32 sensor to start monitoring</p>
               <Button
                 onClick={() => setIsConnectModalOpen(true)}

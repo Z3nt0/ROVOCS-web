@@ -139,7 +139,7 @@ export function DeleteDeviceModal({ isOpen, onClose, device, onDeviceDeleted }: 
 
                 {/* Device Info */}
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                       device.isConnected ? 'bg-green-100' : 'bg-red-100'
                     }`}>
@@ -148,12 +148,12 @@ export function DeleteDeviceModal({ isOpen, onClose, device, onDeviceDeleted }: 
                       }`} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">{device.name}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{device.name}</p>
                       <p className="text-xs text-gray-500">{device.serial}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-500">Readings</p>
-                      <p className="text-sm font-medium text-gray-900">{device.readings.toLocaleString()}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{device.readings.toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
